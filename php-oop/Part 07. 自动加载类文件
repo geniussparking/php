@@ -1,0 +1,63 @@
+<?php
+/*
+自动加载
+	我们在实际的开发过程中需要大家遵守一些原则
+		所有的类都应该放在不同的文件里、一个文件里面只放一个类、文件的名称要和里面的类的名称对应起来！
+			有利于管理维护
+			比较有利资源的节省
+	有没有这样的一种手段：
+		当我们需要用哪个类的时候，程序为我们自动的去加载这个类！	
+	方法一：
+		只需要在使用类之前定义一个函数__autoload
+		这个函数会在，我们使用一个类并且这个类事先没有被定义过的时候自动的去执行！
+		这样子就给了我们在程序出错之前最后一次引入所需要的类的机会！
+		这个函数会接受一个参数，参数是我们需要引入的类的名字！
+		这个函数以后在高版本PHP可能会被废弃，所以使用第二种方法；
+	方法二：
+		使用SPL函数
+			SPL：PHP标准库，里面提供了很多的处理典型问题的类、接口、函数	相关说明到php.net直接搜索SPL
+			1)spl_autoload_register
+				这个函数可以注册一个函数，作为当我们需要使用一个类、且这个类不存在的时候自动执行
+				通过它可以注册多次、注册多个函数，这些函数不会互相的覆盖、而是当我们需要找一个类的时候，自动的依次执行！
+				直到我们找到了对应的类！
+			2)spl_autoload_functions，获取注册的函数，数组形式输出
+			3)spl_autoload_unregister，卸载掉某个注册的函数
+	注意点：自动加载函数对被继承的类、接口、traits都有效果
+ */
+header('Content-Type:text/html;charset=utf-8');
+/*
+function __autoload($className){
+	var_dump($className);
+	$classPath='lib/'.$className.'.class.php';
+	if(file_exists($classPath)){
+		require_once $classPath;
+	}
+}
+$hanMM=new Student('韩梅梅','女');
+*/    //方法一接近弃用状态
+
+function classLoad1($className){
+	var_dump($className);
+	$classPath='lib1/'.$className.'.class.php';
+	if(file_exists($classPath)){
+		require_once $classPath;
+	}
+}
+function classLoad2($className){
+	var_dump($className);
+	$classPath='lib2/'.$className.'.class.php';
+	if(file_exists($classPath)){
+		require_once $classPath;
+	}
+}
+
+spl_autoload_register('classLoad1');  
+//上面定义的函数，如果要执行的话是：classLoad1($className);这样
+//执行注册一个函数，这里理解成只要符合条件，会自动执行参数名的函数，相当于if(...判断条件...){classLoad1($className);}
+spl_autoload_register('classLoad2',true,true);  //第三个参数会让calssLoad2先运行，默认spl_autoload_register('classLoad2');
+/*
+var_dump(spl_autoload_functions());
+spl_autoload_unregister('classLoad2');
+var_dump(spl_autoload_functions());
+*/
+new Huskies();

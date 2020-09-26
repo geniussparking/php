@@ -1,0 +1,125 @@
+<?php
+// include_once '/inc/config.inc.php';   //引入文件
+// include_once '/inc/mysql.inc.php';
+$link=connect(); //调用函数，写函数的时候，最后一定要有return $link;
+//$query='select * from sfk_father_module';
+//$result=execute($link,$query); //调用函数，执行一条SQL语句，返回结果集或bool值。写函数的时候，最后一定要有return $result; 否则这里是$result是空值，无法读取数据
+//var_dump(mysqli_fetch_assoc($result));
+//var_dump(execute_bool($link, $query));//调用函数，返回bool值
+
+//执行多条SQL语句
+// $arr_sqls=array(
+// 		'select * from sfk_father_module',
+// 		'select * from sfk_father_module',
+// 		'select * from sfk_father_module',
+// 		'select * from sfk_father_module'
+// );
+// var_dump(execute_multi($link, $arr_sqls,$error));
+// echo $error;
+
+//获取记录数
+// $query='select count(*) from sfk_father_module';
+// echo num($link, $query);
+
+//关闭连接
+//*********************
+// function a($i){
+// 	$i=$i+100;
+// 	echo $i.'<br />';
+// }
+// $i=2;
+// a($i);
+// echo $i;  //这里输出的$i还是2，函数内部的操作不会影响外面的变量，这里传递进函数的值只是复制了一份，不是传递的变量本身
+
+// $query='select count(*) from sfk_father_module';
+// execute($link, $query);
+// echo num($link, $query);
+// close($link);
+// execute($link, $query); //这里连接已经被关闭了，所以再执行就出错了,变量被影响了，因为 在我们的PHP里面如果向函数里面传递的是对象，那么并不是把对象复制一份传给函数，而是直接传递的这个对象本身
+//*********************
+
+// $a=<<<STRING
+// SD'ASd''sda"asd"SDda
+// STRING;
+// $a=mysqli_escape_string($link, $a);//将字符串转义,但是这个函数有缺点，只能放字符串
+// $query="insert into sfk_father_module(module_name) values('{$a}')"; //注意这里的values后面本来就是要加单引号，双引号里面的{a}会被解析
+// echo $query;
+// var_dump(execute($link, $query));//执行插入一条语句
+
+$a=<<<STRING
+SD'ASd''sda"asd"SDda
+STRING;
+$b=<<<STRING
+SD'ASd''sda"asd"SDda
+STRING;
+$c=<<<STRING
+SD'ASd''sda"asd"SDda
+STRING;
+$d=<<<STRING
+SD'ASd''sda"asd"SDda
+STRING;
+$data=array(    //n维数组如何写
+	0=>$a,
+	1=>array(0=>$b,1=>$c),
+	2=>$d
+);
+var_dump(escape($link, $data));  //将一个N维数组里面的所有字符利用递归函数转义
+
+if(empty($_POST['module_name']) || mb_strlen($_POST['module_name'],'utf8')>66){   //empty($_POST['sort']) 这里最好不要加empty这个判断，会导致sort填0时不能通过，因为0也会被认为是空
+	skip('father_module_add.php', 'error', '版块名不得为空,或不能多于66个字符!');
+}
+
+if(mysqli_num_rows($result)){   //这里写成mysqli_affected_rows($link)也是一样
+	skip('father_module.php', 'error', '版块已经存在！');
+}
+
+//var_dump($_SERVER); 
+// var_dump($_SERVER['SCRIPT_NAME']);  //这个变量里面保存的是当前文件的路径和文件名，用REQUEST_URL的话，如果url后面有参数，则会一起传进来，例如*.php?id=1,id=1也会一起进来
+// var_dump(basename($_SERVER['SCRIPT_NAME'])); //获得最终文件名
+// exit();
+
+//var_dump($_GET['return_url']);  //所有以get方式获取的数据都以数组形式存在$_GET这个变量里面
+//var_dump($_SERVER); //$_SERVER里面保存的数据很强大，$_SERVER['HTTP_REFERER']这个里面保存的是上一个页的url地址
+//echo mb_strlen($_POST['module_name'],'utf-8'); //计算字符数
+
+if(!isset($_GET['id']) || !is_numeric($_GET['id'])){    //判断get进来的id是否合法， is_numeric是判断id是不是数字型的字符串，以防止id=1 or 1=1会删除数据库里面所有数据
+	skip('father_module.php','error','id参数传递失败！');
+}
+
+
+foreach($_POST['sort'] as $key=>$val){    //这里遍历整个sort数组，将sort[id]里，id对应的值更改
+		if(!is_numeric($key) || !is_numeric($val)){
+			skip('father_module.php', 'error', '排序参数错误！');
+		}
+		$query[]="update sfk_father_module set sort={$val} where id={$key}";
+	}
+	
+	
+	
+//定界符，第二个A之前不能有空格.注意sort[]写成数组，比写成sort要强大，相当于把数据存入数组，这样所有的sort值都能存进去，后面的不会覆盖前面的，再进行操作
+$html=<<<A
+			<tr>
+				<td><input class="sort" value="{$data['sort']}" type="text" name="sort[{$data['id']}]" /></td>
+				<td>{$data['module_name']}[id:{$data['id']}]</td>
+				<td><a href="#">[访问]</a>&nbsp;&nbsp;<a href="father_module_update.php?id={$data['id']}">[编辑]</a>&nbsp;&nbsp;<a href="{$delete_url}">[删除]</a></td> <!--get方式获取id,.php?id=*-->
+			</tr>
+A;
+
+
+if(strtolower($_POST['vcode'])!=strtolower($_SESSION['vcode'])){   //判断输入的验证码和生成的验证码是不是一致的，并且不区分大小写
+	skip('register.php', 'error', '验证码输入错误！');
+}
+
+if(mysqli_affected_rows($link)==1){
+    	setcookie('sfk[name]',$_POST['name']);  
+    	setcookie('sfk[pw]',sha1(md5($_POST['pw'])));  //在客户端设置cookie,没有设置cookie有效时间，存入叫sfk的数组，密码双重加密，因为是保存在本地的
+    	skip('index.php', 'ok', '注册成功！');
+    }else{
+    	skip('register.php', 'error', '注册失败，请重试！');
+    }
+  
+ 
+ $_SESSION['vcode']=vcode(100,40,30,4); //将验证码函数返回的字符串保存到一个SESSION里面
+    
+    
+    

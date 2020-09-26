@@ -1,0 +1,226 @@
+范围解析操作符 ::
+作用：
+  1. 访问类里面的静态成员;
+  	 怎样去定义？
+		在定义类属性或方法的时候在可见性的前面或后面加上static即可。
+		static 可见性 $属性名
+			一旦修改了静态属性的值，那么它是会记住的！
+			访问这些静态属性的时候和类常量一样，不同的地方在于，类常量不能修改其值，静态属性可以修改值；
+			注意：静态属性需要加上$,（结合静态变量来理解，其实相当于是静态变量，只是用在了类里面）
+		static 可见性 function 方法名(){
+			...
+		}
+		注意：静态方法里面不可以使用$this，因为静态方法的调用不需要实例化，因此这个$this其实相当于不存在；
+	 作用：
+		静态成员和具体的实例没有关系，我们在使用这些成员的时候无需通过具体的实例，相当于说，静态成员是公共资源，可以直接使用的；
+		静态方法在访问的时候无需实例化，可以理解是公共资源；
+  2. 访问类里面的常量
+    类内部如何访问
+      格式：self::类常量名称     //当前类中的常量（父类、子类）
+      格式：parent::类常量名称     //如果子类有重新定义(重写)父类的常量，可以通过parent关键字来表示调用父类中的常量
+      
+    类外部如何访问
+      格式：类名称::类常量
+      注意：需要访问哪个类里面的常量就用哪个类的名称就可以了(在子类中也可以重写父类的常量，所以子类的常量可能会跟父类的常量值不同)
+      注意：类常量可以在子类中重写去定义，但是不能直接修改其值(直接赋值是不行的)
+  3. 在子类里面访问父类中的方法（被重写了的方法）
+      parent::方法
+      注：没有介绍在实例化以后，直接访问父类中被覆盖了的方法；如果要访问被父类中被覆盖的方法，就在子类中通过parent::方法，在实例中调用
+
+
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	public $iq=100;
+	const BIRTHPLACE='EARTH';
+	public function __construct($name,$sex){  //类里面定义构造函数，在创造实例的时候就可以直接传实参到类名后面的括号里
+		$this->name=$name;
+		$this->sex=$sex;
+	}
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	public function hello(){
+		echo '<p>我是来自'.self::BIRTHPLACE.'的人类</p>'; 
+	}
+}
+
+class Student extends Humanity{
+	const BIRTHPLACE='MARS';
+	public $studentID;
+	public $subject;
+	public function study($subject){
+		echo "{$this->name}正在学习{$subject}";
+	}
+	//方法重写，相当于在当前这个子类里面覆盖了父类的某个方法
+	//参数的个数要和父类一致，构造函数的参数个数无需和父类里面的构造函数的参数个数一致
+	public function eat($food){      //这里重写，对其他子类不影响
+		echo "{$this->name}正在快速的吃{$food}";
+		$this->say("{$this->name}说{$food}真好吃。");
+	}
+	public function hello(){
+		echo '<p>我是来自'.self::BIRTHPLACE.'的学生</p>'; //这里也可以把self换成parent，换了之后就变成了访问父类的常量了
+		parent::hello();
+	}
+}
+$zhangsan=new Student("张三","男");
+//$zhangsan->eat("苹果");
+echo '<p>'.Student::BIRTHPLACE.'</p>';  //这里也可以直接调用相应类的常量
+echo '<p>'.Humanity::BIRTHPLACE.'</p>';
+$zhangsan->hello(); //注意，没有介绍通过实例访问父类中被覆盖的方法
+
+输出：
+MARS
+
+EARTH
+
+我是来自MARS的学生
+
+我是来自EARTH的人类
+
+
+老师的代码：
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity {
+	public $name;
+	public $sex;
+	public $iq=10;
+	const BIRTHPLACE='地球';
+	//构造函数
+	public function __construct($name,$sex){
+		$this->name=$name;
+		$this->sex=$sex;
+	}
+	protected function chew($food){
+		echo "<p>{$food}已经被咀嚼完成！</p>";
+	}
+	public function eat($food){
+		$this->chew($food);
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+	}
+	public function hello(){
+		echo '<p>您好！我是来自'.self::BIRTHPLACE.'的人类</p>';
+	}
+}
+class Student extends Humanity {
+	const BIRTHPLACE='火星';
+	public $studentId;
+	public function test($subject){
+		echo "<p>{$this->name}正在考{$subject}！</p>";
+	}
+	public function eat($food){
+		$this->chew($food);
+		echo "<p>{$this->name}正在快速的吃{$food}！</p>";
+	}
+	public function hello(){
+		parent::chew('铅笔');//没有必要通过这种方式来访问，因为他以及被你继承过来了！
+		parent::hello();
+		echo '<p>您好！我是来自'.self::BIRTHPLACE.'人类中的学生</p>';
+	}
+}
+/*
+范围解析操作符::
+作用：
+一、访问类里面的静态成员
+	
+二、访问类里面的常量
+	类内部如果访问？
+		self::类常量名称
+		
+		parent::类常量名称
+	类外部如果访问？
+		类名称::类常量名称
+		注意点：需要访问那个类里面的常量就用哪个类的名称就可以了
+三、在子类里面访问父类中的方法（被重写了的方法）
+	parent::方法
+	我们没有必要在子类里面通过parent去访问父类中 没有被 重写 的方法！
+
+注意：类常量可以在子类中重写去定义、但是不能直接修改其值！
+
+*/
+echo '<p>'.Humanity::BIRTHPLACE.'</p>';
+echo '<p>'.Student::BIRTHPLACE.'</p>';
+//$hanMM=new Humanity('韩梅梅','女');
+//$hanMM->hello();
+$liLei=new Student('李雷','男');
+$liLei->hello();
+echo $liLei::BIRTHPLACE;//可以，但是我们极度不建议你通过具体的实例去访问 类常量
+
+输出：
+地球
+火星
+铅笔已经被咀嚼完成！
+您好！我是来自地球的人类
+您好！我是来自火星人类中的学生
+火星
+
+
+
+
+//静态成员：静态属性和静态方法
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	static public $counter;    //静态属性，注意$不能丢，可以理解成静态变量
+	public function __construct($name,$sex){  
+		$this->name=$name;
+		$this->sex=$sex;
+		self::$counter++;      //调用静态属性，这里相当于是一个计数器，功能是每创建一个实例，这里的$counter就加1，这样就能计算创建了多少个实例
+	}
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){       //静态方法
+		echo "hello,我是来自".self::BIRTHPLACE."的人类";  //静态方法是可以访问类常量的
+	}
+}
+
+$hanMM=new Humanity("韩梅梅","女");  //类里面定义了构造函数，所以这里在创建对象的时候直接传实参
+echo $hanMM->name.'<br />';
+echo $hanMM->sex;
+$hanMM->eat("鸭梨");
+new Humanity("韩梅梅","女");
+new Humanity("韩梅梅","女");
+echo Humanity::$counter.'<br />'; //不需要实例化，直接访问静态属性，这里输出3
+Humanity::hello();  //不需要实例化，直接访问静态方法
+
+输出：
+韩梅梅
+女
+韩梅梅正在吃鸭梨！
+韩梅梅说：鸭梨真好吃！
+3
+hello,我是来自EARTH的人类
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

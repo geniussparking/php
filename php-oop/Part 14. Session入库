@@ -1,0 +1,163 @@
+MySQL.class.php
+<?php
+class MySQL extends mysqli {
+	public function __construct($host, $user, $password, $database, $port,$charset='utf8'){
+		@parent::__construct($host, $user, $password, $database, $port);
+		if($this->connect_errno){
+			exit($this->connect_error);
+		}
+		$this->set_charset($charset);
+	}
+	public function execute($query){
+		$this->result=$this->query($query);
+		if($this->errno){
+			exit($this->error);
+		}
+	}
+}
+
+
+SessionDeal.class.php
+<?php
+class SessionDeal implements SessionHandlerInterface {
+	private $db;
+	private $gcMaxlifetime;
+	public function __construct($db){
+		$this->db=$db;   //session_start.inc.php的$db是一个数据库连接的对象, 那这里的类成员$db就是一个对象，这个对象的方法来自创建数据库连接类的所有方法和属性
+		$this->gcMaxlifetime=ini_get('session.gc_maxlifetime'); 
+		//从php.ini里面读取session.gc_maxlifetime的值，这里的意思是获取session最长时效，秒为单位
+	} 
+	//开启session的时候执行		session_start()
+	public function open($save_path,$name){
+		//echo $save_path;    
+		//$save_path保存的是cookie的存放路径，如果服务器的session功能被session_set_save_handler($object)函数接管后，
+		//session信息将会根据$object这个对象所属的类来处理session
+		//$name保存的是默认的缓存文件名
+		return true; //这里不用做什么操作，只要返回true就好了
+	}
+	//将会话信息读取到$_SESSION变量中的时候执行session_start()
+	public function read($session_id){     //$session_id是身份号
+		$sql="select `data` from session where id='{$session_id}' and UNIX_TIMESTAMP() < expire";
+		$this->db->execute($sql);
+		if($this->db->affected_rows==1){
+			return $this->db->result->fetch_array(MYSQLI_NUM)[0];
+		}else{
+			return '';
+		}
+	}
+	//session垃圾回收机制启动的时候执行	
+	public function gc($maxlifetime){
+		$sql="delete from session where expire < UNIX_TIMESTAMP()";
+		$this->db->execute($sql);
+		if($this->db->affected_rows){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	//把$_SESSION数据像资料库里面写的时候执行		脚本即将执行结束的时候一次性将$_SESSION里面的内容写入资料库
+	public function write($session_id,$session_data){
+		$sql="replace into session(id,data,expire) values('{$session_id}','{$session_data}',UNIX_TIMESTAMP()+{$this->gcMaxlifetime})";
+		//注意这里的replace其实是两部操作，先delete已经存在的id，再insert into
+		$this->db->execute($sql);
+		if($this->db->affected_rows){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	//销毁的时候执行	session_destroy();
+	//执行了这个就不会再去执行write方法
+	public function destroy($session_id){
+		$sql="delete from session where id='{$session_id}'";
+		$this->db->execute($sql);
+		if($this->db->affected_rows==1){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	//关闭的时候执行	在 write 函数执行完成时执行，它像类里面的析构函数
+	public function close(){
+		return true;
+	}
+}
+
+
+session_start.inc.php
+<?php
+include 'SessionDeal.class.php';
+include 'MySQL.class.php';
+$host='localhost';
+$user='root';
+$password='';
+$database='php2';
+$port=3306;
+$db=new MySQL($host, $user, $password, $database, $port); //创建一个数据库连接的对象
+session_set_save_handler(new SessionDeal($db));   //接管session，将创建的数据库对象传到这个函数进行处理
+session_start();
+
+setsession.php
+<?php
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+include 'session_start.inc.php';
+$_SESSION=array(
+	'name'=>'孙胜利',
+	'url'=>'sifangku.com'
+);
+
+getsession.php
+<?php
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+include 'session_start.inc.php';
+var_dump($_SESSION);
+
+destroysession.php
+<?php
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+include 'session_start.inc.php';
+session_destroy();
+
+index.php
+<?php
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+include 'session_start.inc.php';
+if(isset($_SESSION['username'])){
+	var_dump($_SESSION);
+}else{
+	echo '<a href="login.php">登录</a>';
+	exit(':((');
+}
+
+
+login.php
+<?php
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+include 'session_start.inc.php';
+if(isset($_POST['submit'])){
+	if($_POST['username']=='sunshengli' || $_POST['username']=='hanMM' || $_POST['username']=='leiLei'){
+		$_SESSION['username']=$_POST['username'];
+	}
+}
+if(isset($_SESSION['username'])){
+	exit($_SESSION['username']);
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>demo</title>
+</head>
+<body>
+<form method="post">
+	<input type="text" name="username" />
+	<input type="submit" name="submit" value="登录" />
+</form>
+</body>
+</html>

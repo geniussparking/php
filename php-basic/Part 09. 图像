@@ -1,0 +1,222 @@
+学前了解：
+        在PHP中通过GD库处理图像的操作，都是先在内存中处理，操作完成以后再以文件流的方式，输出到浏览器或保存在服务器的磁盘中。
+学前需求：
+        开启GD库扩展
+创建一个图像应该完成如下所示的四个基本步骤
+        1.创建图像
+           所有的绘图设计都需要在一个图像上完成，以后的操作都将基于这个图像。
+        2.绘制图像
+           图像创建完成以后，就可以通过这个图像资源，使用各种画像函数设置图像的颜色、填充画布、画点、线段、各种几何图形，以及向图
+           像的添加文本等。
+        3.输出图像
+           完成整个图像的绘制之后，需要将图像以某种格式保存到服务器的文件中，或者将图像直接输出到浏览器上显示给用户。但在图像输出
+           之前，一定要使用header()函数发送Content-type通知浏览器，这次发送的是图片不是文本！	
+        4.释放资源
+
+
+<?php
+/*
+PHP不仅限于处理文本数据，还可以创建不同格式的动态图像，比如GIF，PNG，JPEG，WBMP，XMP等等！
+在PHP中可以通过GD扩展库实现对图像的处理，不仅可以创建新图像，而且可以处理已有图像。
+学前了解：
+在PHP中可以通过GD库处理图像
+		创建一个图像应该完成如下所示的四个基本步骤：
+1.创建图像
+           所有的绘图设计都需要在一个图像上完成，以后的操作都将基于这个图像。
+		     1.创建新的
+			   imagecreatetruecolor()//新建一个真彩色图像
+			 2.打开服务器或网络文件中已经存在的GIF,JPEG,PNG,WBMP格式图像
+			   imagecreatefromjpeg()
+			   imagecreatefrompng()
+			   imagecreatefromgif()
+			   imagecreatefromwbmp()
+			   创建或者打开失败的时候会返回空字符串，并且输出一条错误信息。
+			   imagesx()//输出画布宽度
+			   imagesy()//输出画布高度
+			   getimagesize()//取得图像大小
+
+2.绘制图像
+           图像创建完成以后，就可以通过这个图像资源，使用各种画像函数设置图像的颜色、填充画布、画点、线段、各种几何图形，以及向图
+           像的添加文本等。
+             1.imagecolorallocate()//分配颜色
+			 2.imagefill()//区域填充
+			 3.imagesetpixel()//画一个单一像素
+			 4.imageline()//画一条线段
+			 5.imagerectangle()//画一个矩形
+			 6.imagestring()//水平地画一行字符串
+			 7.imagettftext()//用 TrueType 字体向图像写入文本
+			 8.imagettfbbox()//计算 TrueType 文字所占区域
+			 9.imagecopy()//拷贝图像的一部分
+			 10.imagecopymerge()//拷贝并合并图像的一部分
+			 11.imagecopyresampled()//重采样拷贝部分图像并调整大小
+
+3.输出图像
+           完成整个图像的绘制之后，需要将图像以某种格式保存到服务器的文件中，或者将图像直接输出到浏览器上显示给用户。但在图像输出
+           之前，一定要使用header()函数发送Content-type通知浏览器，这次发送的是图片不是文本！	
+            header()
+			 imagegif()
+			 imagejpeg()
+			 imagepng()
+			 imagewbmp()
+
+4.释放资源   imagedestroy()
+ */
+//var_dump(imagecreatetruecolor(200, 200));//新建一个真彩色图像，长高都是200px,这个var_dump返回一个资源型数据：php:18:resource(2, gd)
+
+/*
+header('Content-type:image/jpeg'); //如果是输出图像，在该函数之前不能输出(可以与其他语句，比如定义变量)任何内容，包括空格空字符...
+$img=imagecreatetruecolor(200, 200);//创建图片，200*200的
+$color1=imagecolorallocate($img, 50, 50, 50);//分配颜色，RGB值	
+$color2=imagecolorallocate($img, 229, 36, 36);
+$color3=imagecolorallocate($img, 46, 219, 53);
+imagefill($img,0,0,$color1);//填充颜色，在$img的左上角位置，填充color1
+imagejpeg($img); //输出图片,如果没有header()函数告诉浏览器返回的应该是图片是不行的，会输出乱码。 -->header('Content-type:image/jpeg');默认的情况下是header('Content-type:text/html');是输出html
+imagedestroy($img);//销毁图像
+//这个时候，其实可以把这个文件的路径作为一个图片地址给html引用，因为类型是header('Content-type:image/jpeg');例如：<img src="http://localhost/php_test/Part09_tuxiang/index.php" />
+*/
+/*
+header('Content-type:text/html; charset=utf-8'); //
+$img=imagecreatetruecolor(200, 200);
+$color1=imagecolorallocate($img, 50, 50, 50);
+$color2=imagecolorallocate($img, 229, 36, 36);
+$color3=imagecolorallocate($img, 46, 219, 53);
+imagefill($img,0,0,$color3);//填充颜色，在$img的左上角位置，填充color3
+//imagejpeg($img,'testimg.jpeg'); // 这里只是生成这张图片，名称为testimg，格式是jpeg.所以上面header函数就应该变成默认的html
+//var_dump(imagejpeg($img,'testimg.jpeg')); //其实这里返回的是bool类型的值，说明保存图片成功。php:70:boolean true
+/*
+if(imagejpeg($img,'images/testimg.jpeg')){ //在images里面去生成，注意要先建一个images文件夹，这里是相对路径
+	echo '图片保存成功，注意.jpeg不能丢，文件格式是charset=utf-8！';
+}
+
+imagejpeg($img,'/wamp64/www/php_test/Part09_tuxiang/images/testimg.jpeg'); //这里是绝对路径。注意：在我们的PHP代码 的函数里面，我们使用的/开头的路径 这个/不是指 web根目录,而是操作系统的 文件的根目录!这里 / 是代表E盘，-->E:\wamp64\www\php_test\Part09_tuxiang\images
+imagedestroy($img);//销毁图像(释放资源)
+*/
+
+
+//设计验证码
+/*
+ * 步骤：
+ * 1. header('Content-type:image/jpeg');告诉浏览器要输出的是图像;
+ * 2. 定长宽;
+ * 3. 创建一张图片:imagecreatetruecolor;定义背景和边框的颜色（随机）;填充图片颜色;画边框;
+ * 4. 画100个点，4条线;
+ * 5. 建字符库，随机抽出5个存入一个变量;
+ * 6. 输出图片;
+ * 7. 释放资源.
+ */
+/*
+header('Content-type:image/jpeg'); 
+$width=120;
+$height=40;
+$element=array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
+$string='';
+for($i=0;$i<5;$i++){
+	$string.=$element[rand(0,count($element)-1)];//随机取字符，存进来，5个字母,注意$string后面的连字符，循环5次，存入
+}
+//也可以直接用连接符像下面这样写
+//$string=$element[rand(0,count($element)-1)].$element[rand(0,count($element)-1)].$element[rand(0,count($element)-1)].$element[rand(0,count($element)-1)].$element[rand(0,count($element)-1)];//随机取字符，存进来，5个字母
+$img=imagecreatetruecolor($width, $height);
+$colorBg=imagecolorallocate($img, rand(200,255), rand(200,255), rand(200,255)); //rand()产生一个随机数，从200-255之间
+$colorBorder=imagecolorallocate($img, rand(200,255), rand(200,255), rand(200,255));
+imagefill($img,0,0,$colorBg);
+imagerectangle($img,0,0,$width-1,$height-1,$colorBorder);//画个矩形，边框
+for($i=0;$i<100;$i++){
+	imagesetpixel($img, rand(0,$width-1), rand(0,$height-1), imagecolorallocate($img, rand(100,200), rand(100,200), rand(100,200)));//画点
+}
+for($i=0;$i<4;$i++){
+	imageline($img, rand(0,$width/2), rand(0,$height), rand($width/2,$width), rand($height/2,$height), imagecolorallocate($img, rand(50,100), rand(50,100), rand(50,100)));//画线
+}
+//imagestring($img, 5, rand(0,$width/3), rand(0,$height/4), 'Hello, my first code!', imagecolorallocate($img, rand(50,100), rand(50,100), rand(50,100)));//写字符串
+imagettftext($img, 30, rand(-5,5), rand(10,20), rand(25,35), imagecolorallocate($img, rand(50,100), rand(50,100), rand(50,100)), 'font/silkroad.ttf', $string);//写入有更加丰富风格的字符串，下载一个字体库，用相对路径引用
+imagejpeg($img); 
+imagedestroy($img);
+*/
+<?php
+/*
+ * //添加文字水印
+header('Content-type:image/jpeg');
+$img=imagecreatefromjpeg('images/zcx.jpg'); //注意这里文件路径要单引号的，因为这里是传入字符串
+$color1=imagecolorallocate($img, 255, 255, 255);
+//var_dump(imagettfbbox(20, 0, 'font/china1.ttf', '小刚/周传雄')); //这个函数是计算出放在图片里面的字所占的像素大小，看手册8个参数是什么意思
+$rect=imagettfbbox(20, 0, 'font/china1.ttf', '小刚/周传雄');//将水印字的8个坐标存入一个数组
+$width=imagesx($img);
+$height=imagesy($img);
+$stringWidth=$rect[2]-$rect[0];//水印的宽
+$stringHeight=$rect[1]-$rect[7];//水印的高
+imagettftext($img, 20, 0, $width-$stringWidth-10, $height-$stringHeight-10, $color1, 'font/china1.ttf', '小刚/周传雄');//往图片里面写字。坐标：字符的左下角。
+imagejpeg($img);
+imagedestroy($img);
+*/
+
+//添加图片水印
+header('Content-type:image/jpeg');
+$img=imagecreatefromjpeg('images/zcx.jpg'); //注意这里文件路径要单引号的，因为这里是传入字符串
+$width=imagesx($img);
+$height=imagesy($img);
+$waterMark=imagecreatefromgif('images/watermark.gif');//需要打开水印图片，不能直接引用
+$sWidth=imagesx($waterMark);//水印的宽
+$sHeight=imagesy($waterMark);
+//imagecopy($img, $waterMark, $width-$sWidth-10, $height-$sHeight-10, 0, 0, $sWidth, $sHeight);//复制一张图片到另一张图片上，看手册。水印起始点的位置（坐标）是左上角，和文字不同（左下角）
+//参数说明：
+//$img:目标图像资源
+//$waterMark:水印的图像资源
+//100:所要拷贝到目标图像资源上面的坐标(x轴位置)
+//100:所要拷贝到目标图像资源上面的坐标(y轴位置)
+//0:从水印的图像资源的x坐标为0的位置开始拷贝
+//0:从水印的图像资源的y坐标为0的位置开始拷贝
+imagecopymerge($img, $waterMark, $width-$sWidth-10, $height-$sHeight-10, 0, 0, $sWidth, $sHeight,50);//换一个复制函数，最后一个值50是透明度
+//参数说明：
+//0:表示透明度,数值越小就越透明，最大值100相当于和imagecopy这个函数一样
+imagejpeg($img);
+imagedestroy($img);
+
+//图像的缩放与裁剪--采样某个图像资源的某一部分到另外一个图像资源上去
+header('Content-type:image/jpeg');
+$img=imagecreatefromjpeg('images/zcx.jpg');//源图像，就是被复制的对象
+$img1=imagecreatetruecolor(500, 500);//目标图像，把源图像复制到这里来
+//imagecopyresampled($dst_image, $src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+//参数说明：
+//$dst_image:目标图片，这里是$img1
+//$src_image:源图片，这里是$img，被复制的图片
+//$dst_x：目标图像的横坐标，意思是把源图片复制到目标图片的横坐标是从哪里开始
+//$dst_y：目标图像的纵坐标，意思是把源图片复制到目标图片的纵坐标是从哪里开始，默认是从左上角：0，0
+//$src_x, $src_y：从源图像的哪里开始复制，默认是左上角，0，0
+//$dst_w, $dst_h：在目标图片上复制多宽多高，意思是在目标图片上开多大的面积复制源图
+//$src_w, $src_h：从源图片上复制多宽多高，最好和目标图片被复制的长宽一样，这样图片不会被拉伸压缩
+imagecopyresampled($img1, $img, 100, 100, 0, 0, 200, 200, 200, 200);
+imagejpeg($img1);
+imagedestroy($img);
+imagedestroy($img1);
+
+
+//图像的缩放与裁剪--等比例缩放
+header('Content-type:image/jpeg');
+$img=imagecreatefromjpeg('images/zcx.jpg');//源图像，就是被复制的对象
+$img1=imagecreatetruecolor(800, 600);//目标图像，把源图像复制到这里来
+$sImgWidth=imagesx($img);//源图像的宽
+$sImgHeight=imagesy($img);//源图像的高
+//imagecopyresampled($dst_image, $src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+imagecopyresampled($img1, $img, 150, 150, 0, 0, $sImgWidth/2, $sImgHeight/2, $sImgWidth, $sImgHeight);//把目标图片上只开辟源图一半的面积，就可以缩小图片了
+imagejpeg($img1);
+imagedestroy($img);
+imagedestroy($img1);
+
+//图像的缩放与裁剪--规定目标画布的宽为100，然后等比例缩放
+header('Content-type:image/jpeg');
+$img=imagecreatefromjpeg('images/zcx.jpg');//源图像，就是被复制的对象
+$sImgWidth=imagesx($img);//源图像的宽
+$sImgHeight=imagesy($img);//源图像的高
+$width=100;//规定目标画布的宽是100px,然后等比例裁剪，以免图片变形.这里的width可以规定成任意大小,会等比例输出
+//$width/$height=$sImgWidth/$sImgHeight //注意这里的计算方法，
+$height=$width/($sImgWidth/$sImgHeight);//目标画布的高
+$img1=imagecreatetruecolor($width, $height);//目标图像，把源图像复制到这里来
+//imagecopyresampled($dst_image, $src_image, $dst_x, $dst_y, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h)
+imagecopyresampled($img1, $img, 0, 0, 0, 0, $width, $height, $sImgWidth, $sImgHeight);//把目标图片上只开辟源图一般的面积，就可以缩小图片了
+imagejpeg($img1);
+imagedestroy($img);
+imagedestroy($img1);
+
+
+
+
+

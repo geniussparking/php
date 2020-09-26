@@ -1,0 +1,623 @@
+一、使用mysqli
+	 我们在PHP中可以使用mysqli扩展与MySQL数据库信息交流，i表示改进，增强，它
+	 执行速度更快。mysqli扩展被封装到一个类中，它是一种面向对象的技术，不过
+	 喜欢过程化编程的用户也不用担心，mysqli也提供了一个面向过程的接口，我们
+	 可以像调用函数那样去使用mysqli扩展，所以我们现在学习mysqli扩展相当于就
+	 是学习它提供给我们的一些函数！
+	 1.建立、关闭与MySQL服务器的连接
+	 2.执行SQL语句
+	 3.预处理语句机制
+------------------------------------------------------------------------------------------
+查看手册：PHP Manual › 数据库扩展 › 针对各数据库系统对应的扩展
+PHP可以和不同的数据库进行交互，不止mysql数据库。
+我们使用mysqli，也就是mysql增强版扩展进行交互。
+PHP Manual › Mysqli › Overview的特性比较给出了为什么要用mysqli进行交互的原因
+手册MySQLi扩展功能概述里面有简单的介绍
+------------------------------------------------------------------------------------------
+1.建立、关闭与MySQL服务器的连接
+   1)连接指定的mysql服务器
+       $mysqli_connect=@mysqli_connect($host, $user, $password,$database,$port);
+   2)连接错误时的提示
+       int mysqli_connect_errno ();//返回最后一次连接调用的错误代码
+       string mysqli_connect_error ();//返回一个字符串描述的最后一次连接调用的错误代码
+   3)设置默认字符编码
+       bool mysqli_set_charset ( mysqli $link , string $charset )
+   4)选择特定的数据库
+       bool mysqli_select_db ( mysqli $link , string $dbname);
+   5)关闭与mysql服务器的连接
+       bool mysqli_close ( mysqli $link );
+********************************************************************************************
+<?php
+header('Content-type:text/html;charset=utf-8');  //设置字符编码
+//与MySQL数据库建立连接，本地host,userid:root; password:123456; 数据库填空；端口3306（默认的，可以不填）
+$link=@mysqli_connect('localhost','root','123456','',3306); //$link相当于是一把链接数据库的钥匙，填上正确的参数即可；加@是为了防止在页面报错误
+//连接错误时的提示，当连接错误的时候的处理机制，如果错误，则返回一个提示
+if(mysqli_connect_errno()){     //用var_dump()输出，账号密码错误的代码是1045. Returns the last error code number from the last call to mysqli_connect(). 
+	exit(mysqli_connect_error());   //Returns the last error message string from the last call to mysqli_connect(). 
+}
+//设置默认字符编码
+mysqli_set_charset($link, 'utf8');
+//选择特定的数据库，如果建立连接的时候选择了数据库，这里可以改成别的数据库
+mysqli_select_db($link,'d2');  //d2是即将被操作的数据库
+
+//中间做各种sql语句操作!
+
+//关闭与mysql服务器的连接
+mysqli_close($link);
+?>
+********************************************************************************************
+
+2.执行SQL语句
+	1)对数据库执行一条SQL语句
+		1>mixed mysqli_query ( mysqli $link , string $query [, int $resultmode = MYSQLI_STORE_RESULT ] );
+			①对于insert，update，delete等不会返回数据的SQL语句，在执行没有错误时将返回true。
+			②对于返回数据的SQL语句执行成功的时候会返回结果集对象（例如：select * from t1; 会返回一个object对象），可以使用操作结果集对象的函数来从中获取数据
+			③mysqli_query第三个参数：MYSQLI_STORE_RESULT和MYSQLI_USE_RESULT决定了mysqli client和server之间取结果集的方式。
+			   MYSQLI_STORE_RESULT：执行SQL时提取结果集返回给client，并分配内存，存储到用户程序空间中,之后mysqli_fetch_array(),相当于是从本地取数据；
+			   MYSQLI_USE_RESULT方式下，mysqli_fetch_array()每次都要向server请求结果行,mysqli_query执行SQL的时候并没有从server将结果集取回
+	                   //对数据库执行语句的第三个参数，说明如下：
+				mysqli_query ( mysqli $link , string $query [, int $resultmode = MYSQLI_STORE_RESULT ] );  默认情况，是mysql数据库将结果返回给PHP客户端，然后用各种数据操作函数来解析数据
+				mysqli_query ( mysqli $link , string $query [, int $resultmode = MYSQLI_USE_RESULT ] );  非默认情况，是mysql数据库将结果存在数据库端，php需要的时候一条条来数据库（服务器）取，这种情况适用于数据量非常大，数据库不方便将所有数据返回给PHP
+		2>bool mysqli_real_query ( mysqli $link , string $query );
+			也可以使用本函数对数据库执行一条SQL语句，返回结果为布尔值，不返回结果集。
+			如果想获取结果集可以使用mysqli_store_result()获取结果集对象. 
+		------------------------------------------------------------------------------------------------------------------------
+		<?php
+		header('Content-type:text/html;charset=utf-8');  
+		$link=@mysqli_connect('localhost','root','','',3306);
+		if(mysqli_connect_errno()){
+			exit(mysqli_connect_error());
+		}
+		mysqli_set_charset($link, 'utf8');
+		mysqli_select_db($link,'d14');
+		//$query='insert into t1(info) values("mysqli_real_query执行SQL语句。")'; 
+		$query='select * from t1';  
+		if(mysqli_real_query($link, $query)){  //加上real后只返回bool值，不返回结果集。如果执行成功，则有下面的过程
+			$result=mysqli_store_result($link); //如果需要结果集，则需要这个函数去服务器取。这里的函数其实就是mysqli_query()的第三个参数
+				while($data=mysqli_fetch_array($result)){ //然后再操作结果集中的数据
+				var_dump($data);
+				}
+		}
+		mysqli_close($link);//关闭与mysql服务器的连接
+		------------------------------------------------------------------------------------------------------------------------
+		3>如果在执行SQL语句的时候发生错误，以上两个函数都将返回false，并且可以使用以下函数处理错误原因.与mysqli_connect_errno()不同			
+			int mysqli_errno ( mysqli $link ); 
+			string mysqli_error ( mysqli $link );
+		-------------------------------------------------------------------------------------------------------------------------
+		<?php
+		header('Content-type:text/html;charset=utf-8');  
+		$link=@mysqli_connect('localhost','root','','',3306);
+		if(mysqli_connect_errno()){
+			print_r('错误代码：'.mysqli_connect_errno().'<br />');  //注意这里的错误处理跟下面的mysqli_errno()和mysqli_error()不同,有connect，是专门针对连接的错误处理
+			print_r('错误信息：'.mysqli_connect_error().'<br />');
+			exit('连接出错，请检查参数，程序退出！');
+		}
+		mysqli_set_charset($link, 'utf8');
+		mysqli_select_db($link,'d14');
+		//$query='insert into t1(info) values("mysqli_real_query执行SQL语句。")'; 
+		$query='select * from t2';  //数据库信息填写错误，下面会有错误处理
+		if($result=mysqli_query($link, $query)){
+			while($data=mysqli_fetch_assoc($result)){
+			var_dump($data);
+		     }
+		}else{
+			//如果出现错误...输出错误代号  
+			var_dump(mysqli_errno($link));
+			//错误信息
+			var_dump(mysqli_error($link));
+			exit();
+		}
+		mysqli_free_result($result);
+		mysqli_close($link);//关闭与mysql服务器的连接
+		-------------------------------------------------------------------------------------------------------------------------
+	2)操作结果集对象的函数  PHP Manual › 数据库扩展 > mysqli_result  详情查看参考手册
+		1>从结果集对象中解析数据的常见函数
+			 ①以索引数组的方式获取一条记录的数据
+						   mixed mysqli_fetch_row ( mysqli_result $result );
+						   重复使用以获取下一条记录的数据
+			 ②以关联数组的方式获取一条记录的数据
+						   array mysqli_fetch_assoc ( mysqli_result $result );
+						   重复使用以获取下一条记录的数据
+			 ③以索引数组或关联数组的方式获取一条记录的数据 MYSQLI_NUM/MYSQLI_ASSOC/MYSQLI_BOTH三个参数表示获取索引/关联/两个都要						
+  						   mixed mysqli_fetch_array ( mysqli_result $result [, int $resulttype = MYSQLI_BOTH ] );
+						   重复使用以获取下一条记录的数据
+			 ④以索引数组或关联数组的方式获取全部记录的数据
+						   mixed mysqli_fetch_all ( mysqli_result $result [, int $resulttype = MYSQLI_NUM ] );
+			 ⑤返回结果集中的下一个字段信息
+						   object mysqli_fetch_field ( mysqli_result $result );
+			 ⑥返回一个代表结果集字段的对象数组
+						   array mysqli_fetch_fields ( mysqli_result $result );
+			 ⑦获取结果中行的数量
+						   int mysqli_num_rows ( mysqli_result $result );
+						   注意：如果使用MYSQLI_USE_RESULT模式则必须在获取完结果集才可使用该函数。
+			-------------------------------------------------------------------------------------------------------
+						<?php
+						header('Content-type:text/html;charset=utf-8');  
+						$link=@mysqli_connect('localhost','root','','',3306);
+						if(mysqli_connect_errno()){
+							print_r('错误代码：'.mysqli_connect_errno().'<br />');
+							print_r('错误信息：'.mysqli_connect_error().'<br />');
+							exit('连接出错，请检查参数，程序退出！');
+						}
+						mysqli_set_charset($link, 'utf8');
+						mysqli_select_db($link,'d14');
+						//$query='insert into t1(info) values("mysqli_real_query执行SQL语句。")'; 
+						$query='select * from t1';  
+						$result=mysqli_query($link, $query,MYSQLI_USE_RESULT);
+						while($data=mysqli_fetch_row($result)){   //while语句取完所有的行
+							var_dump($data);
+						}
+						var_dump(mysqli_num_rows($result));
+						mysqli_free_result($result);
+						mysqli_close($link);//关闭与mysql服务器的连接
+			-------------------------------------------------------------------------------------------------------
+		2>释放与一个结果集相关的内存
+			 返回的结果集在数据量很大的时候需要很多的内存支持，所以在操作完结果集的时候有必要立刻释放与一个结果集相关的内
+			 存， 释放之后，结果集就不可用了
+			 void mysqli_free_result ( mysqli_result $result );
+		3)其他常用函数
+		1>获取前一个Mysql操作的受影响行数，就是上一次SQL操作，有多少行被改动			
+			int mysqli_affected_rows ( mysqli $link );
+		2>返回最后一次操作自动生成并使用的id
+         	 	mixed mysqli_insert_id ( mysqli $link );
+      		3>转义 用于SQL语句中的特殊字符防止SQL语句出错
+			string mysqli_real_escape_string ( mysqli $link , string $escapestr );
+		-----------------------------------------------------------------------------------------------------------------
+		<?php
+		header('Content-type:text/html;charset=utf-8');  
+		$link=@mysqli_connect('localhost','root','','',3306);
+		if(mysqli_connect_errno()){
+			print_r('错误代码：'.mysqli_connect_errno().'<br />');  //注意这里的错误处理跟下面的mysqli_errno()和mysqli_error()不同,有connect，是专门针对连接的错误处理
+			print_r('错误信息：'.mysqli_connect_error().'<br />');
+			exit('连接出错，请检查参数，程序退出！');
+		}
+		mysqli_set_charset($link, 'utf8');
+		mysqli_select_db($link,'d14');
+
+		//定界符将字符串赋给一个变量
+		$str=<<<STRING
+		FDSFSDdsff''sd'sd'sd'fsd"S"SDFSF"SDF'fsdf"SDFS"FSDfsdsdfd'''''::::;;;;;;dsf任意字符。。。...''
+		STRING;
+		$str=mysqli_real_escape_string($link, $str);  //将特殊字符转义完后再存回去，防止SQL语句出错，转义的目的就是为了让数据顺利入库
+		$query="insert into t1(info) values('{$str}')"; //注意这里单双引号,{$str}在双引号里面才能被解析，单引号是因为insert语句的values后面需要用单引号将值引起来
+		if($result=mysqli_query($link, $query)){
+			var_dump(mysqli_insert_id($link));  //这里可以看到刚才执行的sql语句在哪个ID起作用了；
+		}else{
+			//如果出现错误...输出错误代号  
+			var_dump(mysqli_errno($link));
+			//错误信息
+			var_dump(mysqli_error($link));
+			exit();
+		}
+		mysqli_close($link);//关闭与mysql服务器的连接
+		-----------------------------------------------------------------------------------------------------------------
+	
+**************************************************************************************************************************************
+//完整的脚本过程
+<?php
+header('Content-type:text/html;charset=utf-8');  
+$link=@mysqli_connect('localhost','root','','',3306);
+if(mysqli_connect_errno()){
+	print_r('错误代码：'.mysqli_connect_errno().'<br />');
+	print_r('错误信息：'.mysqli_connect_error().'<br />');
+	exit('连接出错，请检查参数，程序退出！');
+}
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link,'d14');
+//$query='insert into t1(info) values("内容1,内容2,内容3")'; //插入数据，浏览器刷新一次，这个语句会执行一次;对于insert，update，delete等不会返回数据的SQL语句，在执行没有错误时将返回true，不需要用操作结果集对象的函数来从中获取数据
+$query='select * from t1';  //将select语句存入一个变量，对于返回数据的SQL语句执行成功的时候会返回结果集对象（会返回一个object对象），可以使用操作结果集对象的函数来从中获取数据
+$result=mysqli_query($link, $query); //执行sql语句，并将执行结果存入一个变量
+----------------------------------------------------------------------------------------------------------------------------------------------
+//中间执行各种语句，对结果集进行各种操作，对结果集的数据进行解析
+// var_dump(mysqli_fetch_row($result)); //以索引数组的方式获取一条结果
+// var_dump(mysqli_fetch_row($result));//第二条
+// var_dump(mysqli_fetch_row($result));//第三条，直到获取完，返回null
+//可以写成while循环语句
+while($data=mysqli_fetch_row($result)){   //这里获取的字符串转换成bool型是true，意思是有数据
+	var_dump($data); 
+}
+// while(mysqli_fetch_row($result)){    //注意这里不能写成这样，因为获取结果是一行一行获取，这里相当于有两次获取，但是只有一个var_dump，所以只会输出第2,4,6...条
+// 	var_dump(mysqli_fetch_row($result));
+// }
+
+
+//以关联数组的方式获取一条记录的数据
+// while($data=mysqli_fetch_assoc($result)){   
+// 	var_dump($data);
+// }
+
+//以索引数组或关联数组的方式获取一条记录的数据，//MYSQLI_NUM/MYSQLI_ASSOC/MYSQLI_BOTH三个参数表示获取索引/关联/两个都要
+// while($data=mysqli_fetch_array($result,MYSQLI_NUM)){   
+// 	var_dump($data);
+// 	}
+
+//以索引数组或关联数组的方式获取一条记录的数据，//MYSQLI_NUM/MYSQLI_ASSOC/MYSQLI_BOTH三个参数表示获取索引/关联/两个都要
+// while($data=mysqli_fetch_array($result,MYSQLI_ASSOC)){   //第二个参数传入MYSQLI_ASSOC是输出关联数组，如果是MYSQLI_NUM则是输出索引数组，如果是MYSQLI_BOTH则是都输出
+// var_dump($data);
+//  	}
+
+//以索引数组或关联数组的方式获取全部记录的数据,一次获取所有，//MYSQLI_NUM/MYSQLI_ASSOC/MYSQLI_BOTH三个参数表示获取索引/关联/两个都要
+//var_dump(mysqli_fetch_all($result,MYSQLI_BOTH));   
+
+//返回结果集中的下一个字段信息，mysqli_fetch_field($result)每执行一次，会显示下一个字段名的对象信息
+//var_dump(mysqli_fetch_field($result));  //这样子返回的是一个object对象，包含字段名，表，数据库等信息
+// $field=mysqli_fetch_field($result);  //将第一个字段名的对象信息存入
+// echo $field->orgname.'<br />';  //原字段名
+// echo $field->name.'<br />';    //现在的字段名，如果有改别名则会显示别名
+// echo $field->table.'<br />';   //表明
+// echo $field->db.'<br />';     //现在使用的数据库
+
+// $field=mysqli_fetch_field($result);  //将第二个字段名的对象信息存入
+// echo $field->orgname.'<br />';  //原字段名
+// echo $field->name.'<br />';    //现在的字段名，如果有改别名则会显示别名
+// echo $field->table.'<br />';   //表明
+// echo $field->db.'<br />';     //现在使用的数据库
+
+
+//返回所有字段信息,返回数组，里面包含对象
+// var_dump(mysqli_fetch_fields($result));
+// $fields=mysqli_fetch_fields($result);
+// echo $fields[0]->name;  //在数组里面取对象
+
+//获取结果集中行的数量
+//echo mysqli_num_rows($result);  //  sql语句可以这么写，$query='select * from t1 limit 0,3';这样这里返回3行
+
+//释放与一个结果集相关的内存
+返回的结果集在数据量很大的时候需要很多的内存支持，所以在操作完结果集的时候有必要立刻释放与一个结果集相关的内
+	 存， 释放之后，结果集就不可用了
+	 mysqli_free_result ( mysqli_result $result );
+//语句执行完毕
+------------------------------------------------------------------------------------------------------------------------------------------------------------ 
+//关闭与mysql服务器的连接,脚本结束。
+mysqli_close($link);
+*********************************************************************************************************************************************************************
+4)一次性执行多条SQL语句,多个SQL语句用分号隔开
+	bool mysqli_multi_query ( mysqli $link , string $query );
+**************************************************************************************************************************************************
+想知道那一句话出问题了，如果执行的每条SQL语句都会返回一个结果，那么想获取每一个结果集对象怎么办呢？可以用以下代码检测
+--------------------------------------------------------------------------------------------------------------------------------------------------
+<?php
+header('Content-type:text/html;charset=utf-8');
+$host='localhost';
+$user='root';
+$password='123456';
+$database='';
+$port='3306';
+//建立到数据库的连接
+$link=@mysqli_connect($host, $user, $password,$database,$port);
+if(mysqli_connect_errno()){
+	exit(mysqli_connect_error());
+}
+//设置 客户端，连接层，返回结果字符集
+mysqli_set_charset($link,'utf8');
+
+//要一次性执行的sql语句，一条一条的放在数组$query_arr里面，每条语句结尾不需要;（程序会自动添加）
+$query_arr[]='drop database if exists sifangku';
+$query_arr[]='create database sifangku character set utf8 collate utf8_general_ci';
+$query_arr[]='use sifangku';
+$query_arr[]="show variables like 'character_set_%'";
+$query_arr[]='create table t1(id int unsigned auto_increment primary key,name char(36))';
+$query_arr[]='insert into t1(name) values("孙胜利")';
+$query_arr[]='insert into t1(name) values("私房库")';
+$query_arr[]='insert into t1(name) values("sifangku.com")';
+$query_arr[]='select * from t1';
+
+$query=implode(';',$query_arr).';';
+var_dump($query_arr);
+//var_dump($query);
+
+/*
+解释：
+	对于mysqli_multi_query()函数
+		可以使用mysqli_store_result()传输一条语句的结果集
+		而后使用mysqli_next_result()准备下一条语句的结果集
+		循环执行即可获取出全部的结果集，还可以顺带判断是否有语句出错（如果遇到出错的语句就会停止，这时正好可以使用mysqli_error()函数输出错误）！
+*/
+if(mysqli_multi_query($link, $query)){
+	$i=0;//计数
+	do {
+		if($result=mysqli_store_result($link)){
+			echo "<div style='color:green;font-weight:bold;'>==========下标为{$i}的语句结果集：==========</div>";
+			var_dump(mysqli_fetch_all($result));
+			mysqli_free_result($result);
+ 		}else{
+ 			echo "==========下标为{$i}的语句无结果集==========<br />";
+ 		}
+ 		$i++;
+ 		//如果没有更多的结果集，跳出整个循环
+ 		if(!mysqli_more_results($link)) break;
+	}while (mysqli_next_result($link));
+	//判断是否有误
+	if($i==count($query_arr)){
+		echo "<div style='color:green;'>SQL语句全部执行成功！</div>";
+	}else{
+		echo "SQL语句执行失败：<br />&nbsp;数组下标为{$i}的语句:{$query_arr[$i]}执行错误<br />&nbsp;错误原因：".mysqli_error($link);
+	}
+}else{
+	echo '执行失败！请检查首条语句是否正确！<br />可能的错误原因：'.mysqli_error($link);
+}
+//关闭打开的数据库连接
+@mysqli_close($link) or exit('数据库连接关闭失败');
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	//核心代码
+	if(mysqli_multi_query($mysqli_connect,"select * from t1;select * from t2")){
+		$i=0;
+		do {
+			if($result=mysqli_store_result($mysqli_connect)){
+				echo '=========第'.++$i.'个结果集中的全部数据=========<br />';
+				var_dump(mysqli_fetch_all($result));
+				mysqli_free_result($result);
+			}
+			if(!mysqli_more_results($mysqli_connect)){
+				break;
+			}
+		}while (mysqli_next_result($mysqli_connect));
+      	}
+********************************************************************************************************************************************************************
+	3.预处理语句机制
+	   在编写PHP代码执行SQL语句的时候，很多情况下我们都是相似的语句，只是个别的参数不同，针对这种重复执行相似语句的情况，MySQL4.1   
+	   版本开始提供了一种名为预处理语句的机制，它可以将整个语句只向MySQL服务器发送一次，以后只要参数发生变化，MySQL服务器只需对
+	   语句的结构做一次分析就够了。这既减少了需要传输的数据量，还提高语句的处理效率。
+	   1)准备一个用于执行的SQL语句
+		mysqli_stmt mysqli_prepare ( mysqli $link , string $query );
+	   2)将变量作为参数绑定到prepared语句上
+		bool mysqli_stmt_bind_param ( mysqli_stmt $stmt , string $types , mixed &$var1 [, mixed &$... ] );
+		参数string $types说明：表示后面多个可选参数变量的数据类型，一一对应.
+			i：int类型
+			d：double或者float类型
+			s：字符串类型
+			b：二进制数据类型（BLOB、二进制字符串）
+	   3)执行一个prepared准本好的语句
+		bool mysqli_stmt_execute ( mysqli_stmt $stmt );
+--------------------------------------------------------------------------------------------------------------------------
+		上述三步骤举例	
+		$query='insert into t1(id,info,content,filed1) values(?,?,?,?)';
+		//准备要执行的SQL语句
+		$stmt=mysqli_prepare($link, $query);
+
+		//为?绑定变量
+		mysqli_stmt_bind_param($stmt,'issd',$val1,$val2,$val3,$val4);
+
+		$val1=1;
+		$val2='第五代青蛙';
+		$val3='的武器大全我带我去';
+		$val4=60.5;
+		//执行准备好的SQL语句
+		var_dump(mysqli_stmt_execute($stmt));
+//全部过程
+<?php
+header('Content-type:text/html;charset=utf-8');
+$link=@mysqli_connect('localhost','root','','',3306);
+if(mysqli_connect_errno()){
+	exit(mysqli_connect_error());
+}
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link,'d14');
+$query='insert into t1(id,info) values(?,?)'; //将sql语句存入变量，占位符?代表要改变的参数
+$stmt=mysqli_prepare($link, $query); //准备要执行的sql语句
+mysqli_stmt_bind_param($stmt, 'is',$val1,$val2);  //为?绑定变量，i表示整形，s表示字符串
+
+$val1=19;
+$val2='预处理语句1';
+var_dump(mysqli_stmt_execute($stmt));  //执行准备好的sql语句
+
+$val1=20;
+$val2='预处理语句2';  //变换变量赋值进去
+var_dump(mysqli_stmt_execute($stmt));  //执行准备好的sql语句
+
+$val1=21;
+$val2='预处理语句3';
+var_dump(mysqli_stmt_execute($stmt));  //执行准备好的sql语句
+
+mysqli_close($link);
+
+--------------------------------------------------------------------------------------------------------------------------
+
+如果是select之类的语句需要具体的结果；
+	   4)将查询出的数据绑定到PHP变量上
+		bool mysqli_stmt_bind_result ( mysqli_stmt $stmt , mixed &$var1 [, mixed &$... ] );
+	   5)从一个prepared语句中抓取结果到指定变量中 
+		bool mysqli_stmt_fetch ( mysqli_stmt $stmt );
+--------------------------------------------------------------------------------------------------------------------------
+<?php
+header('Content-type:text/html;charset=utf-8');
+$link=@mysqli_connect('localhost','root','','',3306);
+if(mysqli_connect_errno()){
+	exit(mysqli_connect_error());
+}
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link,'d14');
+$query='select * from t1 where id<?'; //将sql语句存入变量，占位符?代表要改变的参数.也可以写成id=? or id=? 或id<?，这样下面的$val需要多个
+$stmt=mysqli_prepare($link, $query);  //准备要执行的sql语句
+mysqli_stmt_bind_param($stmt, 'i',$val1);  //为?绑定变量，i表示整形，s表示字符串
+$val1=3;
+if(mysqli_stmt_execute($stmt)){    //执行准备好的sql语句
+	mysqli_stmt_bind_result($stmt,$id,$info);  //将查询出的数据绑定到PHP变量上
+	while(mysqli_stmt_fetch($stmt)){
+	echo "{$id}->{$info}<br />";
+	}
+}
+
+$val1=10;
+if(mysqli_stmt_execute($stmt)){
+	mysqli_stmt_bind_result($stmt,$id,$info);  //将查询出的数据绑定到PHP变量上
+	while(mysqli_stmt_fetch($stmt)){
+		echo "{$id}->{$info}<br />";
+	}
+}
+
+$val1=30;
+if(mysqli_stmt_execute($stmt)){
+	mysqli_stmt_bind_result($stmt,$id,$info);  //将查询出的数据绑定到PHP变量上
+	while(mysqli_stmt_fetch($stmt)){
+		echo "{$id}->{$info}<br />";
+	}
+}else{
+	var_dump(mysqli_stmt_errno($stmt));    //错误处理提示
+	var_dump(mysqli_stmt_error($stmt));
+}
+
+mysqli_close($link);
+
+
+--------------------------------------------------------------------------------------------------------------------------
+	   6)从一个prepared语句返回结果集元数据，配合相关函数，可以用来获得字段的相关信息
+		mysqli_result mysqli_stmt_result_metadata ( mysqli_stmt $stmt );
+		①mysqli_fetch_field();
+		②mysqli_fetch_fields();
+---------------------------------------------------------------------------------------------------------------------------
+<?php
+header('Content-type:text/html;charset=utf-8');
+$link=@mysqli_connect('localhost','root','','',3306);
+if(mysqli_connect_errno()){
+	exit(mysqli_connect_error());
+}
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link,'d14');
+$query='select * from t1 where id<?'; //占位符?代表要改变的参数.也可以写成id=? or id=? 或id<?，这样下面的$val需要多个
+$stmt=mysqli_prepare($link, $query);
+mysqli_stmt_bind_param($stmt, 'i',$val1);
+$val1=30;
+if(mysqli_stmt_execute($stmt)){
+	$result=mysqli_stmt_result_metadata($stmt);  //获得字段的相关信息
+	var_dump(mysqli_fetch_fields($result)); 
+}
+
+mysqli_close($link);
+
+
+---------------------------------------------------------------------------------------------------------------------------
+	   7)取回一个结果集
+		bool mysqli_stmt_store_result ( mysqli_stmt $stmt );
+		取回之后可以使用int mysqli_stmt_num_rows ( mysqli_stmt $stmt );返回语句结果集中的行数
+---------------------------------------------------------------------------------------------------------------------------
+<?php
+header('Content-type:text/html;charset=utf-8');
+$link=@mysqli_connect('localhost','root','','',3306);
+if(mysqli_connect_errno()){
+	exit(mysqli_connect_error());
+}
+mysqli_set_charset($link, 'utf8');
+mysqli_select_db($link,'d14');
+$query='select * from t1 where id<?'; //占位符?代表要改变的参数.也可以写成id=? or id=? 或id<?，这样下面的$val需要多个
+$stmt=mysqli_prepare($link, $query);
+mysqli_stmt_bind_param($stmt, 'i',$val1);
+$val1=30;
+if(mysqli_stmt_execute($stmt)){
+	var_dump(mysqli_stmt_store_result($stmt));  //取回一个结果集
+	var_dump(mysqli_stmt_num_rows($stmt));      //取回之后返回语句结果集中的行数
+}
+mysqli_close($link);
+---------------------------------------------------------------------------------------------------------------------------
+	   8)释放给定语句处理存储的结果集所占内存
+		void mysqli_stmt_free_result ( mysqli_stmt $stmt );
+	   9)关闭一个prepared语句
+		bool mysqli_stmt_close ( mysqli_stmt $stmt );		
+****************************************************************************************************************************
+//课堂笔记部分：
+1.建立、关闭与MySQL服务器的连接
+	1)连接指定的mysql服务器
+       $mysqli_connect=@mysqli_connect($host, $user, $password,$database,$port);
+   2)连接错误时的提示
+       int mysqli_connect_errno ();//返回最后一次连接调用的错误代码
+       string mysqli_connect_error ();//返回一个字符串描述的最后一次连接调用的错误代码
+   3)设置默认字符编码
+       bool mysqli_set_charset ( mysqli $link , string $charset )
+   4)选择特定的数据库
+       bool mysqli_select_db ( mysqli $link , string $dbname);
+   5)关闭与mysql服务器的连接
+       bool mysqli_close ( mysqli $link );
+2.执SQL语句
+	1)对数据库执行一条SQL语句
+		1>mixed mysqli_query ( mysqli $link , string $query [, int $resultmode = MYSQLI_STORE_RESULT ] );
+			①对于insert，update，delete等不会返回数据的SQL语句，在执行没有错误时将返回true。
+			②对于返回数据的SQL语句执行成功的时候会返回结果集对象可以使用操作结果集对象的函数来从中获取数据
+			③MYSQLI_STORE_RESULT和MYSQLI_USE_RESULT决定了mysqli client和server之间取结果集的方式。
+			   MYSQLI_STORE_RESULT：执行SQL时提取结果集返回给client，并分配内存，存储到用户程序空间中,之后mysqli_fetch_array()
+	           相当于是从本地取数据；而MYSQLI_USE_RESULT方式下，mysqli_fetch_array()每次都要向server请求结果行。
+	           MYSQLI_USE_RESULT：执行SQL的时候并没有从server将结果集取回
+		2>bool mysqli_real_query ( mysqli $link , string $query );
+			也可以使用本函数对数据库执行一条SQL语句，返回结果为布尔值，不返回结果集。
+			如果想获取结果集可以使用mysqli_store_result()获取结果集对象. 
+		3>如果在执行SQL语句的时候发生错误，以上两个函数都将返回false，并且可以使用以下函数处理错误原因
+			int mysqli_errno ( mysqli $link );
+			string mysqli_error ( mysqli $link );
+	2)操作结果集对象的函数
+		1>从结果集对象中解析数据的常见函数
+			 ①以索引数组的方式获取一条记录的数据
+						   mixed mysqli_fetch_row ( mysqli_result $result );
+						   重复使用以获取下一条记录的数据
+			 ②以关联数组的方式获取一条记录的数据
+						   array mysqli_fetch_assoc ( mysqli_result $result );
+						   重复使用以获取下一条记录的数据
+			 ③以索引数组或关联数组的方式获取一条记录的数据
+						   mixed mysqli_fetch_array ( mysqli_result $result [, int $resulttype = MYSQLI_BOTH ] );
+						   重复使用以获取下一条记录的数据
+			 ④以索引数组或关联数组的方式获取全部记录的数据
+						   mixed mysqli_fetch_all ( mysqli_result $result [, int $resulttype = MYSQLI_NUM ] );
+			 ⑤返回结果集中的下一个字段信息
+						   object mysqli_fetch_field ( mysqli_result $result );
+			 ⑥返回一个代表结果集字段的对象数组
+						   array mysqli_fetch_fields ( mysqli_result $result );
+			 ⑦获取结果中行的数量
+						   int mysqli_num_rows ( mysqli_result $result );
+						   注意：如果使用MYSQLI_USE_RESULT模式则必须在获取完所有的结果才可使用该函数。
+		2>释放与一个结果集相关的内存
+			 返回的结果集在数据量很大的时候需要很多的内存支持，所以在操作完结果集的时候有必要立刻释放与一个结果集相关的内
+			 存， 释放之后，结果集就不可用了
+			 void mysqli_free_result ( mysqli_result $result );
+	3)其他常用函数
+		1>获取前一个Mysql操作的受影响行数
+			int mysqli_affected_rows ( mysqli $link );
+      	2>返回最后一次操作自动生成并使用的id
+         	 mixed mysqli_insert_id ( mysqli $link );
+      	3>转义用于SQL语句中的特殊字符防止SQL语句出错
+			 string mysqli_real_escape_string ( mysqli $link , string $escapestr );
+	4)一次性执行多条SQL语句,多个SQL语句用分号隔开	
+		bool mysqli_multi_query ( mysqli $link , string $query );
+3.预处理语句机制
+   1)准备一个用于执行的SQL语句
+        mysqli_stmt mysqli_prepare ( mysqli $link , string $query );
+   2)将变量作为参数绑定到prepared语句上
+        bool mysqli_stmt_bind_param ( mysqli_stmt $stmt , string $types , mixed &$var1 [, mixed &$... ] );
+        参数string $types说明：表示后面多个可选参数变量的数据类型，一一对应.
+                i：int类型
+                d：double或者float类型
+                s：字符串类型
+                b：二进制数据类型（BLOB、二进制字符串）
+   3)执行一个prepared准本好的语句
+        bool mysqli_stmt_execute ( mysqli_stmt $stmt );
+		
+上述三步骤举例	
+$query='insert into t1(id,info,content,filed1) values(?,?,?,?)';
+//准备要执行的SQL语句
+$stmt=mysqli_prepare($link, $query);
+
+//为?绑定变量
+mysqli_stmt_bind_param($stmt,'issd',$val1,$val2,$val3,$val4);
+
+$val1=1;
+$val2='第五代青蛙';
+$val3='的武器大全我带我去';
+$val4=60.5;
+//执行准备好的SQL语句
+var_dump(mysqli_stmt_execute($stmt));
+
+如果是select之类的语句需要具体的结果；
+	4)将查询出的数据绑定到PHP变量上
+		bool mysqli_stmt_bind_result ( mysqli_stmt $stmt , mixed &$var1 [, mixed &$... ] );
+	5)从一个prepared语句中抓取结果到指定变量中
+		bool mysqli_stmt_fetch ( mysqli_stmt $stmt );
+		
+		
+	6)从一个prepared语句返回结果集元数据，配合相关函数，可以用来获得字段的相关信息
+        mysqli_result mysqli_stmt_result_metadata ( mysqli_stmt $stmt );
+        ①mysqli_fetch_field();
+        ②mysqli_fetch_fields();
+	7)取回一个结果集
+        bool mysqli_stmt_store_result ( mysqli_stmt $stmt );
+        取回之后可以使用int mysqli_stmt_num_rows ( mysqli_stmt $stmt );返回语句结果集中的行数
+    8)释放给定语句处理存储的结果集所占内存
+        void mysqli_stmt_free_result ( mysqli_stmt $stmt );
+    9)关闭一个prepared语句
+        bool mysqli_stmt_close ( mysqli_stmt $stmt );

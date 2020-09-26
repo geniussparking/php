@@ -1,0 +1,343 @@
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{       //定义类
+	public $name;       //变量
+	public $sex;
+	public $age;
+	const BIRTHPLACE='EARTH';   //常量
+	//类方法就是一段等待执行的代码，相对于该类所有的实例都是一样的，方法里面本身并不保存数据，在该类所有的实例中方法的代码其实是共享的！
+	public function eat($food){  //类的方法
+		echo "<p>{$this->name}正在吃{$food}！</p>";   //$this是这个类创建的实例
+		$this->say("{$this->name}说：{$food}真好吃！");   //方法里面也可以调用方法
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+}
+
+$xiaoming=new Humanity();
+$xiaoming->name="小明";
+$xiaoming->eat("苹果");
+$name=$xiaoming->name;
+echo "设置的姓名：{$name}";
+
+//对象里面的属性,通过foreach()遍历出来，不能遍历常量和方法，方法只是一段需要执行的一段代码，它并不保存数据，方法需要用到的数据其实都是保存在属性里面的。
+foreach ($xiaoming as $key=>$val){
+	var_dump("{$key} => {$val}");
+}
+
+if($xiaoming instanceof Humanity){    //检测一个对象是不是属于一种特定的类型
+	echo "实例\$xiaoming是类Humanity的对象。";	
+}
+
+echo '<p>$xiaoming所属的类是：'.get_class($xiaoming).'</p>';   //获取对象所属的类,在类的内部可以省掉参数,直接用get_class();就可以获得类名；
+
+输出：
+小明正在吃苹果！
+
+小明说：苹果真好吃！
+
+设置的姓名：小明
+string 'name => 小明' (length=14)
+string 'sex => ' (length=7)
+string 'age => ' (length=7)
+实例$xiaoming是类Humanity的对象。
+$xiaoming所属的类是：Humanity
+
+
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+}
+
+//按引用传递：
+// $a=100;
+// $b=&$a;  //加上&符号就是表示按引用传递；$a的值改变后，输出$b也跟着改变；
+// $a=10;
+// echo $a;
+// echo $b;
+
+//是“默认情况下对象是通过引用传递的”。但其实这不是完全正确的。php 的引用是别名，就是两个不同的变量名字指向相同的内容。
+$xiaohan=new Humanity();
+$xiaohan->name="小韩";  //设置对象的name属性值
+echo $xiaohan->name;
+echo'<br />*******<br />';
+$hanMM=$xiaohan;  //这里把对象$xiaohan赋值给$hanMM
+$hanMM->name="韩梅梅"; //设置属性值，看会不会改变原来的对象$xiaohan的属性值
+echo $hanMM->name;
+echo'<br />*******<br />';
+echo $xiaohan->name; //这里输出的是韩梅梅，所以看起来对象是通过“引用”传递的，但实际上，这里的原理跟“按引用传递”是不同的
+echo'<br />*******<br />';
+
+//对象的复制 clone
+$xiaohei=clone $xiaohan;
+echo $xiaohei->name;    //输出韩梅梅
+echo'<br />*******<br />';
+foreach($xiaohei as $key=>$val){   //遍历一下属性值
+	echo "{$key} => {$val}<br />";   //输出和$xiaohan一样的属性值
+}
+
+//对象的比较
+//现在有三个对象：$xiaohan, $hanMM, $xiaohei
+var_dump($xiaohan==$hanMM);  //true
+var_dump($xiaohan===$hanMM);  //true 因为他们实际上是指向同一个对象
+var_dump($xiaohan==$xiaohei); //true 属性和属性值都相等，而且两个对象是同一个类的实例，那么这两个对象变量相等
+var_dump($xiaohan===$xiaohei); //false $xiaohei是克隆的$xiaohan,所以不是指向同一个实例（对象）。    -->而如果使用全等运算符（===），这两个对象变量一定要指向某个类的同一个实例（即同一个对象）。           
+
+
+//对象的序列化和反序列化，方便从文件或数据库读取，然后操作
+//注：
+//1>序列化一个对象将会保存其所有变量，但是不会保存对象的方法，只会保存类的名字。
+//2>为了能够 unserialize()一个对象，这个对象的类必须已经定义过。
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+}
+
+// $hanMM=new Humanity();
+// $hanMM->name="小韩";  //设置对象的name属性值
+
+//对象的序列化，对象转换成字符串，将对象保存到会话或数据库或文件里面，对象本来是保存在内存中的，不是字符串形式
+//var_dump(serialize($hanMM)); //输出：string 'O:8:"Humanity":2:{s:4:"name";s:6:"小韩";s:3:"age";i:10;}' (length=58)
+//说明可以保存到文件或变量里面，还是字符串数据类型；
+//那么反序列化，比如从数据库或文件里读出下面$str的字符串，然后反序列化后，相当于得到一个实例
+$str='O:8:"Humanity":2:{s:4:"name";s:6:"小韩";s:3:"age";i:10;}';
+$a=unserialize($str); //反序列化后得到一个实例$a,下面就可以调用这个实例的属性值和方法了，注意相关的类Humanity必须事先定义好，不然这个实例是无效的；
+echo $a->name;
+$a->eat('香蕉');
+// 输出：
+// 小韩
+// 小韩正在吃香蕉！
+// 小韩说：香蕉真好吃！
+
+
+构造函数、析构函数:
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	public function setVal($name,$sex){
+		$this->name=$name;
+		$this->sex=$sex;
+	}
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	
+}
+//正常情况下，我们要在通过类创建一个对象的时候，需要初始化一些值，例如这里的$name,$sex；在对象使用完之后，需要销毁某个对象；
+//初始化值其实可以通过在类里面写一个函数，用来接收参数，设置参数
+$hanMM=new Humanity();
+$hanMM->setVal("韩梅梅","女");// 这里所谓的初始化其实是通过上面的函数setVal()实现的，太Low了,虽然能实现初始化一些值的功能
+echo $hanMM->name;   //这里能输出初始化的值，说明通过函数初始化成功
+echo $hanMM->sex;
+//销毁对象可以用unset()方法
+unset($hanMM);  //常规的销毁对象的方式，也很LOW,php
+echo $hanMM->sex;//语句会报错，因为对象被销毁了，再调用就相当于不存在这个对象了
+
+
+//来看看比较优雅的方法，构造函数__construct和析构函数__destruct
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	public function __construct($name,$sex){  //类里面定义构造函数，在创造实例的时候就可以直接传实参到类名后面的括号里
+		$this->name=$name;
+		$this->sex=$sex;
+	}
+	public function __destruct(){  			//析构函数，对象使用完毕(不必理会这里的析构函数定义在哪里)会自动销毁这个变量，不需要使用unset($obj)方式
+		echo "{$this->name}被销毁了。<br />";
+	}
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	
+}
+
+$hanMM=new Humanity("韩梅梅","女");  //类里面定义了构造函数，所以这里在创建对象的时候直接传实参
+echo $hanMM->name.'<br />';
+echo $hanMM->sex;
+$hanMM->eat("鸭梨");
+
+$xiaozhao=new Humanity("赵大人","男");
+echo $xiaozhao->name.'<br />';
+echo $xiaozhao->sex;
+$xiaozhao->eat("苹果");
+
+输出：
+韩梅梅
+女
+韩梅梅正在吃鸭梨！
+韩梅梅说：鸭梨真好吃！
+
+赵大人
+男
+赵大人正在吃苹果！
+赵大人说：苹果真好吃！
+赵大人被销毁了。 //注意这里，是在两个对象使用完毕才自动执行析构函数__destruct()销毁
+韩梅梅被销毁了。
+
+//继承
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	public $iq=100;
+	const BIRTHPLACE='EARTH';
+	public function __construct($name,$sex){  //类里面定义构造函数，在创造实例的时候就可以直接传实参到类名后面的括号里
+		$this->name=$name;
+		$this->sex=$sex;
+	}
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+}
+//继承
+//我们在定义某个类的时候，可以指定这个类根据程序中已经存在的某个类派生而来！
+//Student类继承了Humanity这个类
+//Student称作是Humanity的子类，Humanity是Student的父类
+//子类继承了父类的属性（变量）和方法，就相当于子类和父类一样的属性和方法，就像是子类自己的一样
+//子类可以再去定义属于自己的属性及方法，类常量
+class Student extends Humanity{
+	public $studentID;
+	public $subject;
+	public function study($subject){
+		echo "{$this->name}正在学习{$subject}";
+	}
+}
+class Worker extends Humanity{
+	public $workerID;
+	public $job;
+	public function work($job){
+		echo "{$this->name}正在做{$job}工作。";
+	}
+}
+$zhangsan=new Student("张三","男");
+$zhangsan->eat("苹果");
+$zhangsan->study("英语");
+
+$lisi=new Worker("李四","男");
+$lisi->eat("香蕉");
+$lisi->work("销售工程师");
+
+输出：
+张三正在吃苹果！
+张三说：苹果真好吃！
+张三正在学习英语
+李四正在吃香蕉！
+李四说：香蕉真好吃！
+李四正在做销售工程师工作。
+
+
+//方法重写
+<?php
+header('Content-Type:text/html;charset=utf-8');
+class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	public $iq=100;
+	const BIRTHPLACE='EARTH';
+	public function __construct($name,$sex){  
+		$this->name=$name;
+		$this->sex=$sex;
+	}
+	public function eat($food){
+		echo "<p>{$this->name}正在吃{$food}！</p>";
+		$this->say("{$this->name}说：{$food}真好吃！");
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+}
+
+class Student extends Humanity{
+	public $studentID;
+	public $subject;
+	public function study($subject){
+		echo "{$this->name}正在学习{$subject}";
+	}
+	//方法重写，相当于在当前这个子类里面覆盖了父类的某个方法
+	//参数的个数要和父类一致，构造函数的参数个数无需和父类里面的构造函数的参数个数一致
+	//父类中被覆盖的方法无法再执行
+	//如果真的想在子类里面访问被当前类覆盖了的父类中的方法，怎么办呢？
+	public function eat($food){      //这里重写，对其他子类不影响
+		echo "{$this->name}正在快速的吃{$food}";
+		$this->say("{$this->name}说{$food}真好吃。");
+	}
+}
+$zhangsan=new Student("张三","男");
+$zhangsan->eat("苹果");
+
+
+//父类中某方法禁止被重写
+
+final public function eat($food){  //前面加个final，表示这个方法不能在子类中被重写；
+...
+}
+
+//类也能做到不被继承（更不用说在子类中重写了，因为根本不能被继承），只需要在类名前加上final
+final class Humanity{    //这样这个类就不能被继承了
+....
+}
+
+//获取父类名
+echo get_parent_class($obj);
+var_dump($obj instanceof Class);
+
+
+可见性（访问控制）
+  我们类里面属性或者方法的可见性，控制着对应的属性或者方法在哪些地方可以访问，哪些地方不能访问
+  我们在定义类属性的时候，必须在前面加上public、protected、private三选一
+  在定义方法的时候可以省略可见性（默认是public）
+
+我们具体在哪些地方访问属性？
+  本类里面：可以访问public, protected, private
+  子类里面: 可以访问public, protected
+  类的外面：可以访问public
+
+作用：保护数据安全
+
+
+
+

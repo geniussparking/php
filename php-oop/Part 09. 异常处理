@@ -1,0 +1,179 @@
+<?php
+/*
+ 异常： 参考资料见第二章：异常与错误处理.pdf
+ 	我们的程序在运行的时候，正常情况下不会出问题，但是在一些特殊情况下会出现问题；例如数据库密码错误
+ 	异常处理：
+ 		可以通过PHP的异常处理机制来处理这些异常；PHP 为我们提供了现成的异常处理类 Exception
+ 		throw new Exception($this->connect_error);  这里是抛出异常
+ 		要想捕获到抛出的异常，需要用以下语句结构
+ 		try{
+ 			可能抛出的异常程序请你放到这里来执行
+ 		}catch(Exception $e){
+ 			如果上面抛出了异常对象，那么就会跳转到这里来执行
+ 		}
+ 		...这里的代码继续执行
+ 	
+ 	
+ 错误：
+ 	无论什么情况，都是错误，例如语法错误
+ */
+header('Content-Type:text/html;charset=utf-8');
+class Mysql extends mysqli{
+	public function __construct($host, $user, $password, $database, $port,$charset='utf8'){
+		@parent::__construct($host, $user, $password, $database, $port);
+		if($this->connect_errno){
+			//exit($this->connect_error);
+			//抛出异常,报告异常,抛出的内容必须是Exception类的实例或者它的子类实例
+			//$e=new Exception($this->connect_error);  //类里面传入字符串  抛出异常
+			//throw $e;
+			throw new Exception($this->connect_error);  //连着写，这里抛出异常，下面的代码不会继续执行，直接跳到接收异常处理的catch语句处
+			}
+		$this->set_charset($charset);
+	}
+	public function execute($query){
+		$result_mysql=$this->query($query);   
+		$this->result_mysql=$result_mysql;
+		if($this->errno){
+			exit($this->error);
+		}
+	}
+}
+//主程序部分开始
+$host='localhost';
+$user='root';
+$password='00';
+$database='sfkbbs';
+$port=3306;
+$charset='utf8';
+$query='select * from sfk_content';
+try {
+	$db=new Mysql($host, $user, $password, $database, $port,$charset);
+} catch (Exception $e) {
+	echo "<p>:))在这里接收并处理抛出来的异常。</p>";
+	echo '<p>'.$e->getMessage().'</p>'; //返回接收到的异常信息
+	echo '<p>'.$e->getCode().'</p>';   //返回接收到的异常代号
+	echo '<p>'.$e->getPrevious().'</p>';   
+	echo '<p>'.$e->getFile().'</p>';   //返回发生异常的文件名
+	echo '<p>'.$e->getLine().'</p>';   //返回发生异常的代码行数
+	var_dump($e->getTrace());
+	echo '<p>'.$e->getTraceAsString().'</p>';
+}/*finally{
+	echo "不管上面的catch语句有没有，这里最终都会执行，适用于php5.5及以后版本";
+}
+*/
+/*
+注意：
+1>如果一个异常没有被捕获，PHP 会产生一个致命错误并且报出“未捕获的异常...”信息，除非设置一个用户定义的异常处理函数
+2>当一个异常被抛出，try 里面之后的语句代码将不会继续执行，PHP 会尝试查找能与之匹配的
+catch。
+3>抛出的异常会一层层的传到最初执行的代码那边（如果在中间没有被捕获的话）。
+4>每个 try 都必须至少有一个相应的 catch 或 finally（php5.5及以后） 块。
+5>当 Exception 类不够用的时候，我们完全可以扩展它（继承）
+6>抛出对象必须是异常类(Exception)的一个实例或异常的子类的实例
+
+*/
+//处理完错误后，接下来的代码继续运行
+//$db->execute($query);
+//var_dump($db->result_mysql->fetch_all());
+
+
+
+
+<?php
+/*
+捕获其他类的异常
+6>抛出对象必须是异常类(Exception)的一个实例或子类的异常实例
+ */
+header('Content-Type:text/html;charset=utf-8');
+class Mysql extends mysqli{
+	public function __construct($host, $user, $password, $database, $port,$charset='utf8'){
+		@parent::__construct($host, $user, $password, $database, $port);
+		if($this->connect_errno){
+			throw new DBException($this->connect_error);    //这里就要抛出DBException的实例了
+			}
+		$this->set_charset($charset);
+	}
+	public function execute($query){
+		$result_mysql=$this->query($query);   
+		$this->result_mysql=$result_mysql;
+		if($this->errno){
+			exit($this->error);
+		}
+	}
+}
+class DBException extends Exception{     //假设这个类是专门处理数据库的类DBException，它继承Exception类，可以再加一些功能
+	public function test(){
+		echo "<p>DBException：{$this->getMessage()}</p>";
+		echo "<p>DBException：{$this->getFile()}</p>";
+		echo "<p>DBException：{$this->getLine()}</p>";
+	}
+}
+//主程序部分开始
+$host='localhost';
+$user='root';
+$password='00';
+$database='sfkbbs';
+$port=3306;
+$charset='utf8';
+$query='select * from sfk_content';
+try {
+	$db=new Mysql($host, $user, $password, $database, $port,$charset);
+}catch (DBException $e) {     //接收DBException的实例
+	$e->test();
+}catch (Exception $e) {       //如果上面都不能处理，最后会到这里处理
+	echo "<p>:))在这里接收并处理抛出来的异常。</p>";
+	echo '<p>'.$e->getMessage().'</p>';
+	echo '<p>'.$e->getCode().'</p>';
+}
+//处理完错误后，接下来的代码继续运行
+//$db->execute($query);
+//var_dump($db->result_mysql->fetch_all());
+
+
+<?php
+/*
+捕获其他类的异常
+用户定义的异常处理函数
+set_exception_handler (callable $exception_handler);
+ */
+header('Content-Type:text/html;charset=utf-8');
+class Mysql extends mysqli{
+	public function __construct($host, $user, $password, $database, $port,$charset='utf8'){
+		@parent::__construct($host, $user, $password, $database, $port);
+		if($this->connect_errno){
+			throw new DBException($this->connect_error);
+			}
+		$this->set_charset($charset);
+	}
+	public function execute($query){
+		$result_mysql=$this->query($query);   
+		$this->result_mysql=$result_mysql;
+		if($this->errno){
+			exit($this->error);
+		}
+	}
+}
+class DBException extends Exception{
+	public function test(){
+		echo "<p>DBException：{$this->getMessage()}</p>";
+		echo "<p>DBException：{$this->getFile()}</p>";
+		echo "<p>DBException：{$this->getLine()}</p>";
+	}
+}
+//主程序部分开始
+function exceptionHandler($e){    //用户定义异常处理函数
+	$e->test();
+}
+set_exception_handler('exceptionHandler');    //参数是函数名，有异常的时候会自动执行传进来的函数 
+$host='localhost';
+$user='root';
+$password='00';
+$database='sfkbbs';
+$port=3306;
+$charset='utf8';
+$query='select * from sfk_content';
+$db=new Mysql($host, $user, $password, $database, $port,$charset);
+//处理完错误后，接下来的代码继续运行
+//$db->execute($query);
+//var_dump($db->result_mysql->fetch_all());
+

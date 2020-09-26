@@ -1,0 +1,25 @@
+/*
+cookie技术回顾
+	存储少量的数据在客户端中，每个网站都可以存储一些属于自己网站的数据在客户端的cookie中
+	这些数据会在每次访问对应网站的时候，自动的将对应的cookie数据携带到服务器端
+	PHP会将这些cookie数据自动的读取到$_COOKIE中
+	在服务器端返回数据给客户端的时候，可以指定客户端将某些数据存储到客户端的cookie中
+*/
+
+<?php    //获取cookie
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+var_dump($_COOKIE);  
+
+<?php   //设置cookie
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+setcookie("member[name]",'孙胜利',time()+2000);
+setcookie("member[url]",'sifangku.com',time()+2000);
+
+<?php   //清除cookie（设置cookie过期）
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+setcookie("member[name]",'孙胜利',time()-1);
+setcookie("member[url]",'sifangku.com',time()-1);
+

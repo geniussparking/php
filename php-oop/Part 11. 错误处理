@@ -1,0 +1,106 @@
+<?php
+header('Content-Type:text/html;charset=utf-8');
+date_default_timezone_set('Asia/Shanghai');
+//error_reporting(0);
+//error_reporting(E_ALL & ~E_NOTICE);
+//error_reporting(E_ALL & ~E_WARNING);
+//error_reporting(E_ALL & ~(E_WARNING | E_NOTICE));
+//error_reporting(E_ALL);
+//ini_set('display_errors','Off');  //off不显示，on显示错误
+/*
+错误处理：具体看  第二章：异常与错误处理.pdf  第二部分，错误处理
+	根据报告出来的错误信息，修正我们的代码！
+	在开发阶段：
+		报告所有的错误
+		显示所有的错误
+	在上线阶段：
+		报告所有的错误
+		隐藏错误
+	
+*/
+//new Abc();//E_ERROR
+//file_get_contents('a.txt');//E_WARNING
+//new1 Abc();//E_PARSE，编译时语法解析错误
+//echo $a;//E_NOTICE
+
+/*
+每一个错误级别的二进制表现形式都只有一位是1，并且这个为1的位都是不一样的！echo E_ERROR;能得到相应的十进制数字。E_ERROR是常量
+--------------------------------
+00000000000000000000000000000001[E_ERROR]   1
+00000000000000000000000000000010[E_WARNING]  2
+00000000000000000000000000000100[E_PARSE]    4
+00000000000000000000000000001000[E_NOTICE]    8
+00000000000000000000100000000000[E_STRICT]   2048 
+...
+00000000000000000100000000000000[E_USER_DEPRECATED]
+--------------------------------
+00000000000000000111111111111111[E_ALL]
+00000000000000000111011111111111[E_ALL]PHP5.3
+11111111111111111111111111110111[~E_NOTICE]      //把[E_NOTICE]取反，得到的二进制表现形式
+00000000000000000111111111110111[E_ALL & ~E_NOTICE]     //把E_ALL和 ~E_NOTICE进行位与运算，即可得到除了E_NOTICE错误不报告，其他错误都报告
+00000000000000000000000000001010[E_WARNING | E_NOTICE]   //报告E_WARNING和E_NOTICE
+00000000000000000111111111111111[E_ALL]
+11111111111111111111111111110101[~(E_WARNING | E_NOTICE)]
+00000000000000000111111111110101[E_ALL & ~(E_WARNING | E_NOTICE)]     //E_WARNING和E_NOTICE不报告
+E_ALL | E_STRICT[PHP5.3里面报告所有错误需要这样子写]
+//设置错误报告级别、是否显示错误
+1、PHP脚本里面
+       先天缺陷：如果脚本都不能编译（php先由Zend引擎编译再执行，如果语法有错，编译器不会编译），这个错误设置报告就没用
+   error_reporting(参数),设置在脚本开头
+   		参数：这个参数的二进制表现形式是你希望报告哪些级别的错误，那对应位上面就是1、否则0，例如E_WARNING--> 00000000000000000000000000000010
+    	error_reporting(E_NOTICE);
+    	error_reporting(0);
+    	error_reporting(E_ALL & ~E_NOTICE);
+		error_reporting(E_ALL & ~E_WARNING);
+		error_reporting(E_ALL & ~(E_WARNING | E_NOTICE));
+   ini_set('display_errors','Off');//Off不显示、On显示
+       总结：
+   //error_reporting(E_ALL);   //设置报告所有的错误
+   //ini_set('display_errors','Off');  //设置不显示错误提示
+2、PHP配置文件里面设置相关的配置，解决因语法错误导致编译无法完成的错误
+	php.ini  error_reporting=0  这样设置后就算是编译阶段出错，也不报错误了
+			 display_error=off 表示不显示
+			 log_errors=on 日志记录错误
+			 error_log="位置"  保存错误日志，可以分析			 
+*/
+//file_get_contents('a.txt');
+//echo $a;
+//trigger_error ('哈哈这边出错了');//无病呻吟
+
+
+接管 PHP 错误处理机制（设置用户自定义的错误处理函数） set_error_handler (callable $error_handler[,int $error_types = E_ALL | E_STRICT ])
+参数：
+1）error_handler
+该回调函数接受的参数
+errno
+第一个参数 errno，包含了错误的级别，是一个 integer。 errstr
+第二个参数 errstr，包含了错误的信息，是一个 string。 errfile
+第三个参数是可选的，errfile， 包含了发生错误的文件名，是一个 string。 errline
+第四个参数是一个可选项， errline， 包含了错误发生的行号，是一个 integer。 errcontext
+第五个可选参数， errcontext 会包含错误触发处作用域内所有变量的数组。
+注意：
+1>如果有必要该函数内部应该使用 exit()函数终止程序的执行
+2>如果该回调函数函数返回 FALSE，标准错误处理处理程序将会继续调用
+3>以下级别的错误不能由用户定义的函数来处理： E_ERROR、 E_PARSE、
+E_CORE_ERROR、 E_CORE_WARNING、 E_COMPILE_ERROR、 E_COMPILE_WARNING
+2）error_types
+规定哪些级别的错误会执行该函数
+4、手动产生一个用户级别错误 trigger_error ( string $error_msg [, int $error_type = E_USER_NOTICE ] )
+产生一个用户级别的 error/warning/notice 信息
+该函数在你运行出现异常时，需要产生一个特定的响应时非常有用。
+参数：
+1）error_msg
+该 error 的特定错误信息，长度限制在了 1024 个字符。超过 1024 长度的字符都会被截断。
+2）error_type
+该 error 所特定的错误类型。仅 E_USER 系列常量对其有效，默认是 E_USER_NOTICE。
+5、PHP7 中的错误处理
+PHP7 与之前的 PHP 版本有很大的不同，PHP7 中的很多错误也会抛出异常（Error 异常），
+Error 异常是自动抛出的，而我们 PHP 里面常规讲的异常是需要手动抛出的！
+1）PHP7 中与之前的 PHP 版本有很大的不同，PHP7 中的很多错误是作为异常的一种（Error 异常），
+不过 Error 异常是自动抛出的，而我们常规讲的异常是需要手动抛出的！
+2）这种 Error 异常可以像普通异常一样被 try/catch 块所捕获。如果没有匹配的 try/catch 块，
+则调用异常处理函数（由 set_exception_handler() 注册）进行处理。 如果尚未注册异常处理函
+数，则按照传统方式处理：被报告为一个致命错误（Fatal Error）
+3）Error 类并不是从 Exception 类 扩展出来的，所以用 catch (Exception $e) { ... } 这样的
+代码是捕获不 到 Error 的。你可以用 catch (Error $e) { ... } 这样的代码，或者通过注册
+异常处理函数（ set_exception_handler()）来捕获 Error

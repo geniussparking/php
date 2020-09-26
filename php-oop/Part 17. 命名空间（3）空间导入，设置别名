@@ -1,0 +1,164 @@
+__NAMESPACE__  魔术常量 表示当前命名空间
+namespace
+	namespace Lib1;
+	var_dump(__NAMESPACE__);
+	new namespace\ClassA();//new \Lib1\ClassA();
+
+use
+use...as
+1）导入类： use后面的类或者命名空间是按照完全限定名称去解析的不管最前面有没有\
+	namespace Lib1;
+	use Exception;//把全局空间里面的Exception类导入到当前命名空间下
+	use Lib2\Test\ClassB; //把命名空间Lib2\Test的ClassB类导入到当前命名空间下
+	use Lib2\Test\ClassA;
+	
+	new Exception(':((');   //直接创建对象
+	new \Lib2\Test\ClassB();  //通过完全限定的方式来访问类或者命名空间必须是真实存在的而非导入进来的！
+	new ClassB();
+	new \Lib1\ClassB();//错误,导入进来类或者命名空间只能够通过非限定或者限定的方式访问，而不能通过完全限定的方式去访问
+	new namespace\ClassB();//不可以 //导入进来的东西也不能通过namespace关键字去访问
+	
+	new ClassA();//访问的是导入进来的，而非真实存在的那个
+	new \Lib1\ClassA();//访问的是真实存在的
+	new namespace\ClassA();//同上
+2）导入类且修改名称
+	namespace Lib1;
+	use Lib2\Test\ClassB as CB;
+	use Lib2\Test\ClassA as CA;
+	new CB();
+	new CA();
+3）导入命名空间
+	namespace Lib1;
+	use Lib2\Test;//把全局空间下面的Lib2下面的 Test导入到Lib1下面
+	
+	new Test\ClassB();
+	new Test\ClassA();
+4）导入命名空间且修改名称
+	namespace Lib1;
+	use Lib2\Test as T;
+
+	new T\ClassB();
+	new T\ClassA();
+注意：
+	这些操作只对当前脚本有效
+	use后面的类或者命名空间是按照完全限定名称去解析的不管最前面有没有\
+	导入进来类或者命名空间只能够通过非限定或者限定的方式访问，而不能通过完全限定的方式去访问
+	
+	demo01.php
+  <?php
+namespace Lib1;
+use Exception;
+use Lib2\Test\ClassB;
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+include 'Lib2/Test/ClassB.class.php';
+//new Exception(':((');
+new \Lib2\Test\ClassB();   //这里的完全限定方式访问跟上面的导入use Lib2\Test\ClassB;没有关系
+new ClassB();  //use Lib2\Test\ClassB;这个是导入进来后才能用
+//new \Lib1\ClassB();//不可以,导入进来类或者命名空间只能够通过非限定或者限定的方式访问，而不能通过完全限定的方式去访问，
+//因为不存在于当前的namespace Lib1;，所以use关键字只是使用另外空间的类，并不是将另外空间类的代码include进来
+new namespace\ClassB();//不可以,会提示Class 'Lib1\ClassB' not found，这里的namespace\ClassB();就相当于\Lib1\ClassB();因为namespace Lib1;中不存在ClassB,而是存在于namespace Lib2\Test;中
+
+demo02.php
+<?php
+namespace Lib1;
+use Lib2\Test\ClassA;
+use Lib2\Test\ClassB as CB;
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+include 'Lib2/Test/ClassA.class.php';
+include 'Lib2/Test/ClassB.class.php';
+//new CB();
+new ClassA();//访问的是导入进来的，而非真实存在的那个
+new \Lib1\ClassA();//访问的是真实存在的，因为这里是namespace Lib1;，在文件Lib1/ClassA.class.php中，也是namespace Lib1;，他们在同一个空间，所以这里不会报错
+new namespace\ClassA();//同上
+
+demo03.php
+<?php
+namespace Lib1;
+use Lib2\Test\ClassA as CA;  //重命名类
+use Lib2\Test\ClassB as CB;
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+include 'Lib2/Test/ClassA.class.php';
+include 'Lib2/Test/ClassB.class.php';
+new CA();
+
+demo04.php
+<?php
+namespace Lib1;
+use Lib2\Test;
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+include 'Lib2/Test/ClassA.class.php';
+include 'Lib2/Test/ClassB.class.php';
+new Test\ClassB();
+new Test\ClassA();
+
+demo05.php
+<?php
+namespace Lib1;
+use Lib2\Test as T;   //重命名空间
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+include 'Lib2/Test/ClassA.class.php';
+include 'Lib2/Test/ClassB.class.php';
+new T\ClassB();
+new T\ClassA();
+
+
+Lib/ClassA.class.php
+<?php
+class ClassA {
+	public function __construct(){
+		var_dump('ClassA');
+	}
+}
+
+
+
+Lib1/ClassA.class.php
+<?php
+namespace Lib1;
+class ClassA {
+	public function __construct(){
+		var_dump('Lib1:ClassA');
+	}
+}
+
+
+Lib2/Test/ClassB.class.php
+<?php
+namespace Lib2\Test;
+class ClassB {
+	public function __construct(){
+		var_dump('Lib2:Test:ClassB');
+		echo "111";
+	}
+}
+
+
+Lib2/Test/ClassA.class.php
+<?php
+namespace Lib2\Test;
+class ClassA {
+	public function __construct(){
+		var_dump('Lib2:Test:ClassA');
+		echo "111";
+	}
+}
+
+
+Lib2/ClassA.class.php
+<?php
+namespace Lib2;
+class ClassA {
+	public function __construct(){
+		var_dump('Lib2:ClassA');
+	}
+}

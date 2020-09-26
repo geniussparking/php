@@ -1,0 +1,116 @@
+<?php
+/*
+ 抽象类：
+ 	从语法上去限制某个类不能够被直接实例化，限制一个父类不能被直接实例化，比如Humanity这个类太抽象太大，那么可以规定这个类只允许被继承，不能被直接实例化；
+ 抽象方法：
+ 	在父类不需要去写具体的实现，只是规定子类里面必须要有这个方法
+ 注意：
+ 	在子类里面具体实现抽象方法的时候可见性要等于或者高于父类的可见性
+ 	方法的参数个数要一致
+ 	在子类里面必须要去实现抽象类里的抽象方法
+ 	只有抽象类里面才可以有抽象方法，抽象类中不一定要有抽象方法
+ */
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{    //抽象类，不能直接实例化
+	public $name;
+	public $sex;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){  
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);   //抽象方法，这里就不需要写具体的实现了，只需要定义一个抽象方法名就好了,子类中必须要有eat()方法
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{
+	public function eat($food){    //子类，需要写抽象父类中的抽象方法
+		echo "{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。<br />";
+	}
+}
+class Worker extends Humanity{
+	public function eat($food){    //子类，需要写抽象父类中的抽象方法
+		echo "{$this->name}是一位{$this->job},他说：{$food}不好吃，所以他正在慢速的吃{$food}。<br />";
+	}
+}
+//$hanMM=new Humanity("韩梅梅","女");  //这里就不能直接实例化了
+
+echo Humanity::$counter.'<br />'; //可以直接访问抽象类的静态属性
+Humanity::hello();  //可以直接访问抽象类的静态方法
+
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("苹果");
+$zhangsan=new Worker("张三","男","工人");
+$zhangsan->eat("米饭");
+
+输出：
+1
+hello,我是来自EARTH的人类
+韩梅梅是一位学生,他说：苹果好吃，所以他正在快速的吃苹果。
+张三是一位工人,他说：米饭不好吃，所以他正在慢速的吃米饭。
+
+
+
+//接口
+<?php
+/*
+接口:
+	接口是用来规定一个类应该怎么去写、规定一个类必须要去实现哪些方法！
+*/
+interface iA {
+	public function aa();
+	public function bb();
+}
+interface iB {
+	public function cc();
+	public function dd();
+}
+interface iC extends iA,iB {    //可以直接从iA和iB继承
+	
+}
+class ClassA implements iA {    //此类必须要有iA的方法
+	public function aa(){
+		
+	}
+	public function bb(){
+	
+	}
+}
+class ClassB implements iA,iB {
+	public function aa(){
+	
+	}
+	public function bb(){
+	
+	}
+	public function cc(){
+	
+	}
+	public function dd(){
+	
+	}
+}
+class ClassC implements iC {
+	public function aa(){
+	
+	}
+	public function bb(){
+	
+	}
+	public function cc(){
+	
+	}
+	public function dd(){
+	
+	}
+}
+$c=new ClassC();
+var_dump($c instanceof iC);

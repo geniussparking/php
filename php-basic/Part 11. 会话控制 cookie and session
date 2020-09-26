@@ -1,0 +1,297 @@
+<?php
+// 当我们在浏览网页时，访问每一个web页面都需要使用"HTTP协议"实现，但是HTTP协议是无状态协议，就是说HTTP协议没有一个内建机制来维护两个事务之间的状态。
+当一个用户请求一个页面以后，在请求同一个网站上的另外一个页面时，HTTP协议并不能告诉我们两个请求是来自同一个用户，而不能将这两次访问联系到一起！
+// 那有怎么解决方法呢？
+// Cookie
+// Session
+
+// 一、cookie
+// Cookie是用来将网站的资料记录在客户端的技术，这种技术让Web服务器能将一些
+// 资料，存放于客户端（用户的电脑）之中。
+// 比如：当通过验证,成功登录网站后，在”网页一“的PHP脚本中，会把这个用户
+// 有关的信息，设置到客户端电脑的Cookie中，当再次访问同一个网站中的其他脚
+// 本时，就会自动携带Cookie中的数据一起访问，在服务器中的每个脚本中都可以
+// 接受Cookie中的数据，不需要每访问一个页面就重新输入一次登录者的信息。
+// 1.向客户端电脑中设置Cookie
+// 2.在服务器端上读取Cookie的内容
+// 3.将多维数组应用于Cookie中
+// 4.删除Cookie
+
+//过程：
+// 1.向客户端电脑中设置Cookie
+// setcookie ();
+// 2.在服务器端上读取Cookie的内容
+// $_COOKIE
+// 3.将多维数组应用于Cookie中
+// setcookie("member[name]",'jack');
+// setcookie("member[email]",'***@gmail.com');
+// 4.删除Cookie
+// setcookie("member",'',time()-1);
+
+
+// 二、session
+// Session技术与Cookie相似，都是用来存储使用者的相关资料，但是最大的不同之
+// 处在于Cookie是将资料存储在客户端电脑中，而Session则是将数据存放于服务器
+// 上。把保存的资料比喻成超市里面的会员卡，Cookie技术就相当于需要用户自己
+// 保存会员卡，每次去超市必须要持有会员卡才能代表自己的身份，那么Session技
+// 术就相当于会员卡由超市方保存，每次来超市的时候只需要报出会员卡的卡号(我
+// 	 们可以称为Session ID,客户端的cookie中只需要保存Session ID)即可！
+// 	 1.开启session
+// 	 2.使用session存储数据
+// 	 3.注销变量与销毁session
+//过程：
+// 1.开启session
+// session_start();//开启一个会话，或者返回已经存在的会话
+// 2.使用session存储数据
+// session_start();
+// $_SESSION['username']='jack';
+// $_SESSION['email']='***@gmail.com';
+// 3.注销变量与销毁session
+// unset($_SESSION['username']);
+// unset($_SESSION['email']);
+// 或者$_SESSION=array();
+// setcookie(session_name(),"",time()-3600);
+
+
+// 一、cookie
+//header('Content-type:text/html;charset=utf-8'); //设置好编码，以防乱码
+//setcookie('name','JackWang1',time()+3600);//设置cookie,内容是name，有效期1个小时.这里用var_dump输出是true说明cookie设置成功.
+这里的cookie是超全局变量,其他脚本也能使用的,就是本浏览器能使用.用var_dump($_COOKIE)能输出所有的cookies,是一个数组
+//setcookie('email','***@gmail.com',time()+3600);
+//var_dump($_COOKIE); //输出本浏览器所有已经存在的cookie信息，在新的脚本里面运行
+
+// 这里输出：
+// array (size=2)
+//    'name' => string 'JackWang1' (length=9)
+//    'email' => string '***@gmail.com' (length=13)
+
+//设置多维数组，存放一个member的多个信息
+ //var_dump(setcookie('member1[name]','Mark',time()+3600));
+ //var_dump(setcookie('member1[age]','18',time()+3600));
+
+// 这时候输出：
+// array (size=3) //因为上面一维数组的cookie有效期是1个小时，这里也带出来了
+// 	'name' => string 'JackWang1' (length=9)
+// 	'email' => string '***@gmail.com' (length=13)
+// 	'member1' =>  //这里是新设置的
+// 		array (size=2)
+// 		'name' => string 'Mark' (length=4)
+// 		'age' => string '18' (length=2)
+
+//删除cookies信息，怎么设置的就怎么删除,并且是一个个删除，需要新建脚本
+// header('Content-type:text/html;charset=utf-8');
+// var_dump(setcookie('member1[name]','',time()-3600));
+// var_dump(setcookie('member1[age]','',time()-3600));
+// var_dump(setcookie('name','',time()-3600));
+// var_dump(setcookie('email','',time()-3600));
+
+ //或者用foreach循环
+//  header('Content-type:text/html;charset=utf-8');
+//  foreach($_COOKIE['member1'] as $key=>$val){
+//  	var_dump(setcookie("member1[{$key}]",'',time()-3600));
+//  }
+
+//var_dump(uniqid()); //uniqid()函数产生一个基于微秒数的随机数，返回：string '582abb3467b97' (length=13)
+//var_dump(uniqid(rand(1000,9999).'_')); //为了防止在同一微秒下同时提交，可以在这个函数里面的前缀部分放一个随机数，后面连接一个_,这里会输出：1221_599cd08cb52a8
+
+
+// $id=uniqid(rand(1000,9999).'_');
+// var_dump(setcookie('id',$id,time()+3600)); //设置一个独特的id信息
+// var_dump($_COOKIE);//在新的脚本输出cookie信息
+// var_dump(setcookie('id','',time()-1));//在新的脚本destory掉
+
+// 二、session
+//创建session,新建index.php
+session_start();//开启一个会话，或者返回已经存在的会话
+$_SESSION['name']='JackWang';
+$_SESSION['age']=20;
+$_SESSION['email']='JackWang@gmail.com'; //执行后在环境的E:\wamp64\tmp文件夹会多出一个文件，里面存的就是这个session的内容
+
+
+//销毁session,新建destroy.php
+session_start();//打开要销毁的session
+session_unset();//释放所有变量（服务器端）
+session_destroy();//销毁一个会话中的全部数据（服务器端）
+setcookie(session_name(),'',time()-1,'/');//销毁保存在客户端的ID(session id),//注意点：使用setcookie删除的时候，
+要与当初设置cookie的时候设置的参数一致，这里setcookie("member",'JackWang',time()+3600,'/abc/');
+第四个参数是一个路径(配置文件session.cookie_path里规定了)，表示这个cookie只在这个路径中有用
+//因此在session，删除cookie的时候，需要加个路径setcookie(session_name(),'',time()-1,'/');
+
+//各种输出，新建1.php
+session_start();  //打开一个存在的session
+var_dump($_SESSION);  //输出会话的内容
+// E:\wamp64\www\php_test\Part11_cookiesession\1.php:3:
+// array (size=3)
+// 		'name' => string 'JackWang' (length=8)
+// 		'age' => int 20
+// 		'email' => string 'JackWang@gmail.com' (length=18)
+
+var_dump($_COOKIE);//输出会话的ID
+// E:\wamp64\www\php_test\Part11_cookiesession\1.php:4:
+// array (size=1)
+// 		'PHPSESSID' => string 'ihss9tgrj9ao9aoupg9ti4p3k0' (length=26)
+
+var_dump(session_name()); //这里的session_name();能找到需要删除的ID（客户端）的name：PHPSESSID，而这个PHPSESSID也是配置文件里面定义的，
+所以用session_name就写活了
+// E:\wamp64\www\php_test\Part11_cookiesession\1.php:5:string 'PHPSESSID' (length=9)
+
+//登录注销的过程：
+1. 通过cookie判断
+login.php文件：
+<?php 
+header('Content-type:text/html;charset=utf-8');
+if(isset($_COOKIE['username']) && $_COOKIE['username']==='jackwang'){
+	exit('您已经登录，请不要重复登录！');
+}
+	if(isset($_POST['submit'])){ //这里是判断是否有提交的动作
+		if(isset($_POST['username']) && isset($_POST['password']) && $_POST['username']==='jackwang' && $_POST['password']==='123456'){ 
+		//判断有没有输入用户名和密码，用户名和密码是否正确。这里就直接假设只有一个用户，是jackwang
+			if(setcookie('username',$_POST['username'],time()+3600)){ //这里是账号密码验证通过后设置cookie
+		//header('location:index.php');//这里是设置完cookie成功后，跳转到index.php,这里是相对路径，也可以写绝对路径，例如：http://google.com
+				header('location:skip.php?url=index.php&info=登录成功，正在跳转中...');
+			}else{
+				echo 'cookie设置失败！';
+			}
+		}else{
+			header('location:skip.php?url=index.php&info=用户名密码错误，登录失败！');
+		}
+		}
+?>
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>请登录</title>
+</head>
+<body>
+	<form method="post" action="login.php"> <!-- action是指提交到哪里 -->
+		账户：<input type="text" name="username"/>
+		密码：<input type="password" name="password"/>
+		<input type="submit" name="submit" value="登录"/>
+	</form>
+</body>
+</html>
+
+index.php文件
+<?php 
+ header('Content-type:text/html;charset=utf-8');
+ if(isset($_COOKIE['username']) && $_COOKIE['username']==='jackwang'){
+ 	echo "亲爱的{$_COOKIE['username']},欢迎回来！";
+ 	echo "<a href='logout.php'>注销登录</a>";
+ }else{
+ 	echo "<a href='login.php'>请登录！</a>";
+ }
+?>
+
+skip.php文件
+<?php 
+	if(!isset($_GET['url']) || !isset($_GET['info'])){
+		exit();
+	}
+?>
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="refresh" content="3;URL=<?php echo $_GET['url']?>" /> <!-- 使用html跳转，3秒后跳转 -->
+<title>正在跳转中...</title>
+</head>
+<body>
+	<div style="text-align: center; font-size:20px;"><?php echo $_GET['info']?>3秒后自动跳转！</div>
+</body>
+</html>
+
+logout.php文件
+<?php 
+ header('Content-type:text/html;charset=utf-8');
+ if(isset($_COOKIE['username']) && $_COOKIE['username']==='jackwang'){
+ 	if(setcookie('username',$_POST['username'],time()-3600)){ 
+ 		header('location:skip.php?url=index.php&info=注销成功，正在跳转中...');
+ 	}else{
+ 		header('location:skip.php?url=index.php&info=注销失败，请重试...');
+ 	}
+ }
+?>
+
+
+2. 通过session判断
+login.php
+<?php 
+session_start();
+header('Content-type:text/html;charset=utf-8');
+if (isset($_SESSION['username']) && $_SESSION['username']==='sunshengli') {
+	exit('您已经登录请不要重复登录');
+}
+if(isset($_POST['submit'])){
+	if(isset($_POST['username']) && isset($_POST['password']) && $_POST['username']==='sunshengli' && $_POST['password']==='123456'){
+		$_SESSION['username']=$_POST['username'];
+		header('Location:skip.php?url=index.php&info=登录成功，正在跳转中！');
+	}else{
+		header('Location:skip.php?url=index.php&info=对不起，用户名或密码填写错误，登录失败！');
+	}
+}
+?>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>请登录</title>
+</head>
+<body>
+<form method="post" action="login.php">
+	姓名：<input type="text" name="username" />
+	密码：<input type="password" name="password" />
+	<input type="submit" name="submit" value="登录" />
+</form>
+</body>
+</html>
+
+
+index.php
+<?php 
+session_start();
+header('Content-type:text/html;charset=utf-8');
+if (isset($_SESSION['username']) && $_SESSION['username']==='sunshengli') {
+	echo "亲爱的{$_SESSION['username']}您好,欢迎回来！";
+	echo "<a href='logout.php'>注销</a>";
+}else {
+	echo "<a href='login.php'>请登录</a>";
+}
+?>
+
+skip.php
+<?php 
+if (!isset($_GET['url']) || !isset($_GET['info'])) {
+	exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="refresh" content="3;URL=<?php echo $_GET['url'] ?>" />
+<title>正在跳转中...</title>
+</head>
+<body>
+	<div style="text-align:center;font-size:20px;"><?php echo $_GET['info'] ?>，3秒后自动跳转！</div>
+</body>
+</html>
+
+logout.php
+<?php 
+session_start();
+header('Content-type:text/html;charset=utf-8');
+if (isset($_SESSION['username']) && $_SESSION['username']==='sunshengli') {
+	session_unset();//Free all session variables
+	session_destroy();//销毁一个会话中的全部数据
+	setcookie(session_name(),'',time()-3600,'/');//销毁保存在客户端的卡号（session id）
+	header('Location:skip.php?url=index.php&info=注销成功，正在跳转中！');
+}else{
+	header('Location:skip.php?url=index.php&info=注销失败，请稍后重试！');
+	
+}
+?>
+
+

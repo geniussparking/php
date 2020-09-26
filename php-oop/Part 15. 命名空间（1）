@@ -1,0 +1,63 @@
+lib1/ClassA.class.php
+<?php
+namespace MySpace\Lib1;
+class ClassA {
+	public function __construct(){
+		var_dump('lib1:ClassA');
+	}
+}
+include 'inc/test.inc.php';   //引入的代码不属于namespace MySpace\Lib1;
+
+lib2/ClassA.class.php
+<?php
+namespace MySpace\Lib2;
+class ClassA {
+	public function __construct(){
+		var_dump('lib2:ClassA');
+	}
+}
+
+inc/func.inc.php
+<?php
+namespace MySpace\Inc;
+function aa(){
+	var_dump('aa');
+}
+
+
+inc/ConstList.inc.php
+<?php
+namespace MySpace\Inc;
+/*
+define这种方式定义的常量默认都是在全局空间中的，和本文件最前面是否定义名称空间没有关系
+echo __NAMESPACE__;  输出当前文件的元素所在命名空间,__NAMESPACE__是魔术常量
+const这种方式定义的常量所在命名空间和本文件最前面的名称空间有关系，但是const语句不能放在if语句函数里面，不能有算数过程-->有一些先天缺陷
+*/
+define('Name','sunshengli');     // 这里定义后的常量还是处于全局空间，不属于namespace MySpace\Inc;
+define(__NAMESPACE__.'\URL','sifangku.com');    //终极写法：定义这个常量的时候就加上命名空间，这里的魔术常量__NAMESPACE__就是MySpace\Inc
+const SEX=1;    //const这种方式定义的常量所在命名空间和本文件最前面的名称空间有关系
+
+
+demo01.php
+<?php
+include 'lib1/ClassA.class.php';
+include 'lib2/ClassA.class.php';
+include 'inc/func.inc.php';
+include 'inc/ConstList.inc.php';
+/*
+这些：类（包括抽象类和 traits）、接口、函数和常量是和命名空间有关系的！其他类型的代码和命名空间没有关系
+全局空间：就是默认的形式、不属于任何的命名空间，和没有命名空间这个概念是一样的！
+*/
+//简单演示怎么使用呢？
+new MySpace\Lib1\ClassA();   //创建类，加上命名空间namespace名称，MySpace\Lib1\是多层命名空间
+new MySpace\Lib2\ClassA();
+MySpace\Inc\aa();    //调用有namespace的函数
+var_dump(MySpace\Inc\URL);  //调用namespace的常量，通过define定义
+var_dump(Name); //这里实际是调用的全局空间的常量，inc/ConstList.inc.php文件中，这个常量没有使用namespace定义，
+//通过define定义,不会被inc/ConstList.inc.php文件开头的namespace MySpace\Inc;语句影响
+var_dump(MySpace\Inc\SEX);   
+//SEX常量是通过const定义的，定义的时候会被inc/ConstList.inc.php文件开头的namespace MySpace\Inc;语句影响
+/*
+同一文件中有很多的类、函数、常量，那怎么把他们放在不同的命名空间里面呢？
+*/
+

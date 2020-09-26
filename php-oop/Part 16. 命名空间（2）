@@ -1,0 +1,96 @@
+其实可以把命名空间看做是文件系统，全局空间最大，全局空间下面可以有很多命名空间，是全局空间的子集，在具体编程中，需要注意当前空间是哪个命名空间
+
+访问PHP命名空间中的元素（类、函数、常量）主要有三种表现形式
+
+非限定名称（全局空间下）
+	new ClassA();
+	aa();
+	echo NAME;
+	注意点：
+		在解析类和 函数、常量 时有不同的策略：
+			**如果是类，当前命名空间下没有这个类，那么会出错，它不会主动的再到全局空间里面找这个类
+			**在解析函数或者常量时是不一样的：如果当前命名空间没有这个元素，它会退到全局空间去找这个元素
+
+限定名称（相当于相对路径，需要看一下当前空间是哪个命名空间）
+	new SpaceA\ClassA();
+	SpaceA\aa();
+	echo SpaceA\NAME;
+
+完全限定名称（相当于绝对路径）
+	new \SpaceA\ClassA();
+	\SpaceA\aa();
+	echo \SpaceA\NAME;
+
+使用时窍门：
+	首先看一下你当前在哪个命名空间下，你要使用的那个元素在哪个命名空间下！
+  
+ Lib/ClassA.class.php
+ <?php
+class ClassA {
+	public function __construct(){
+		var_dump('ClassA');
+	}
+}
+
+Lib1/ClassA.class.php
+<?php
+namespace Lib1;
+class ClassA {
+	public function __construct(){
+		var_dump('Lib1:ClassA');
+	}
+}
+
+Lib2/ClassA.class.php
+<?php
+namespace Lib2;
+class ClassA {
+	public function __construct(){
+		var_dump('Lib2:ClassA');
+	}
+}
+
+demo01.php
+<?php
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+//怎么访问Lib目录下面的ClassA
+//当前空间是在全局空间下
+new ClassA();     
+new \ClassA();
+echo '<p>============================</p>';
+//怎么访问Lib1目录下面的ClassA
+new Lib1\ClassA();
+new \Lib1\ClassA();
+echo '<p>============================</p>';
+//怎么访问Lib2目录下面的ClassA
+new Lib2\ClassA();
+new \Lib2\ClassA();
+
+demo02.php
+<?php
+namespace Lib1;    //注意此空间和Lib1目录下面的ClassA都是namespace Lib1;
+include 'Lib/ClassA.class.php';
+include 'Lib1/ClassA.class.php';
+include 'Lib2/ClassA.class.php';
+//怎么访问Lib目录下面的ClassA（此空间在全局空间）
+new \ClassA();  
+echo '<p>============================</p>';
+//怎么访问Lib1目录下面的ClassA，注意此空间和Lib1目录下面的ClassA都是namespace Lib1;
+new ClassA();
+new \Lib1\ClassA();
+echo '<p>============================</p>';
+//怎么访问Lib2目录下面的ClassA  
+new \Lib2\ClassA();
+
+
+new \Exception(':((');      //Exception类属于全局空间的类，所以需要切换到全局空间
+$str='1,2,3,4,5,6,7,8';
+var_dump(explode(',',$str));  //函数和常量就不需要切换到全局空间，因为解释器在当前空间找不到的话，会自动到全局空间去找
+
+
+
+
+
+

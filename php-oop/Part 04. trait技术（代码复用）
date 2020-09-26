@@ -1,0 +1,168 @@
+<?php
+/*
+ trait  基本使用方法
+ 	它使得类里面的代码（主要指属性和方法）更加灵活的被复用；
+ 	trait和include很相似
+ 		通过include技术我们可以引入文件
+ 		通过trait技术我们可以引入代码
+ 	使用时机：
+ 		当我们的类各自有不同的父类（不是同一个父类），当这些类需要使用到同样的一些方法时，就可以把这些同样的方法放到trait里面，
+		然后在各个类里面使用use trait名;来引用trait里面的代码
+  优先级，如果遇到同名方法，执行的权限：本类方法 > trait里的方法 > 父类的方法
+  可同时引用多个trait, 使用逗号分隔：use tA,tB;
+*/
+header('Content-Type:text/html;charset=utf-8');
+trait tA{
+	public function aa(){
+		echo "<p>this is function aa, it belongs to trait A;</p>";
+	}
+}
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){  
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+
+abstract class Dog{
+	//这里定义一个狗的抽象类
+}
+
+class Student extends Humanity{      //学生类是人类的子类
+	public function eat($food){
+		echo "{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。<br />";
+	}
+	use tA;    //使用trait里面的“公用”代码
+}
+class Huskie extends Dog{   ////哈士奇是狗的抽象类的子类
+	use tA;    //使用trait里面的“公用”代码
+}
+
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->aa();   //输出：this is function aa, it belongs to trait A;
+
+$xiaogou=new Huskie();
+$xiaogou->aa();   //输出：this is function aa, it belongs to trait A;   
+
+
+
+
+<?php
+/*
+ trait冲突解决，如果不同的trait里面有同名的方法
+ use tA,tB{
+ 	tA::ok insteadof tB; //这里是表示使用tA的ok方法，不使用tB的
+ 	}
+ 如果非要使用tB的ok方法怎么办呢？
+ 	use tA,tB{
+ 	tA::ok insteadof tB; //这里是表示使用tA的ok方法，不使用tB的
+ 	tB::ok as tBok;   //相当于使用as给tB的ok方法起了个别名tBok; 起别名之前必须先解决冲突问题，就是上面的insteadof
+ 	}
+ 还可以修改trait里面方法的可见性
+ 	use tA,tB{
+ 	tA::ok insteadof tB;
+ 	tB::ok as tBok;
+ 	aa as private;  //虽然tB里面并没有aa方法，如果这里还是指明一下tA::aa会不会更清晰，写成tA::aa as private;也不会报错
+ 	bb as private tAbb;  //这里实际上是把bb方法复制了一份给了tAbb，并设置tAbb的可见性为private,bb不会受到影响
+ 	
+ 	}
+trait里面也可以使用其他trait
+	trait tC{
+		use tA,tB{
+			tA::ok insteadof tB;  //和类里面一样的，有冲突就要立刻解决掉
+			tB::ok as tBok;   //使用as给tB的ok方法起个别名tBok，这样就可以以tBok为方法名调用tB里面的ok方法
+		}
+	} 
+ trait里面可以有抽象方法，在具体类里面使用这个trait的时候，需要在所有使用这个trait的类里面将定义的抽象方法实现；
+ trait里可以定义静态成员
+ trait里面可以定义属性，注意：如果trait定义了一个属性，使用trait的类将不能定义同样名称的属性，否则会产生一个错误；
+ 
+ */
+header('Content-Type:text/html;charset=utf-8');
+trait tA{
+	public function aa(){
+		echo "<p>tA:aa...</p>";
+	}
+	public function bb(){
+		echo "<p>tA:bb...</p>";
+	}
+	public function ok(){
+		echo "<p>tA:OK...</p>";
+	}
+}
+
+trait tB{
+	public function cc(){
+		echo "<p>tB:cc...</p>";
+	}
+	public function dd(){
+		echo "<p>tB:dd...</p>";
+	}
+	public function ok(){     //这里和tA有同名方法，有冲突,如果不事先解决冲突问题，直接在下面的类use两个trait的话会报错；
+		echo "<p>tB:OK...</p>";
+	}
+}
+
+
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){  
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+
+abstract class Dog{
+	//这里定义一个狗的抽象类
+}
+
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。<br />";
+	}
+	use tA,tB{    //这里就不能直接分号结束了，因为要解决冲突问题，所以要用{}来写解决冲突的语句；
+		tA::ok insteadof tB;
+		tB::ok as tBok;    //非要使用tB的ok方法，那么使用as给tB的ok方法起个别名tBok
+		//aa as private;   //改变aa方法的可见性
+		bb as private tAbb; //这里实际上是把bb方法复制了一份给了tAbb，并设置tAbb的可见性为private,bb不会受到影响
+	}
+}
+class Huskie extends Dog{ 
+	use tA,tB{
+		tB::ok insteadof tA;
+	} 
+}
+
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->aa();
+$hanMM->bb();
+//$hanMM->tAbb();
+$hanMM->ok();
+$hanMM->tBok();

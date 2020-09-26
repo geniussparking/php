@@ -1,0 +1,190 @@
+<?php
+/*
+ * php手册：函数参考--文本处理--字符串
+ * 一、去除空格或其他字符函数
+	1.trim
+		$str='    abc   ';
+		var_dump($str);
+		var_dump(trim($str));   //去掉两边的空白，换行符，回车符，制表符等空白字符
+		
+		$str='abcabcdefac';
+		var_dump($str);
+		var_dump(trim($str,'bac'));//如果要去除多个字符可以连着写！只要参数'bac'够得着的，全部去除掉；
+二、大小写转换函数
+	$str='test';
+	var_dump($str);
+	$str1=strtoupper($str);
+	var_dump($str);
+
+	$str='TeSt';
+	var_dump($str);
+	var_dump(strtolower($str));
+	var_dump($str);
+三、字符串查找函数
+	1.substr_count
+		$str='testteste';
+		var_dump(substr_count($str,'te'));
+
+		$text2 = 'gcdgcdgcd';
+		echo substr_count($text2, 'gcdgcd');
+
+		$str='testteste';
+		var_dump(substr_count($str,'te',1,8));//不能超出字符串
+	2.strpos
+		$str='testteste';
+		var_dump(strpos($str, 't1'));
+		if(strpos($str, 't')===false){
+			echo '没找到！';
+		}else{
+			echo '找到啦!';
+		}
+
+		$str='testteste';
+		var_dump(strpos($str, 't',1));
+	3.strstr
+		$str='testteste';
+		var_dump($str);
+		var_dump(strstr($str,'s'));
+		var_dump(strstr($str,'s',true));
+四、字符串替换函数
+	1.str_replace
+	$str=array(
+		'abc123abc',
+		'123abcabc',
+		'abcab123c'
+	);
+	var_dump($str);
+	$str1=str_replace(array('1','2','3'),array('一','二','三'),$str,$count);
+	echo $count;
+	var_dump($str1);
+ */
+/*
+$str='acabcsff   abcabcedDDFDDFDFfdlfsavcbca   cbsa';
+
+var_dump($str);
+//var_dump(trim($str));//两边的空格去掉
+var_dump(trim($str,'abc'));//string 'sff   abcabcedfdlfsavcbca   cbs' (length=31)
+var_dump(ltrim($str,'a'));//去掉左边的
+var_dump(rtrim($str,'a'));//去掉右边的
+var_dump(strtoupper($str));//转换成大写
+var_dump(strtolower($str));//小写
+echo substr_count($str,'a');//count a出现几次
+var_dump(substr_count($str,'D',20));//从第21个字符开始往右边找
+var_dump(substr_count($str,'a',1,2));//从第二个字符开始搜索，搜索2位，这里返回1
+var_dump(strpos($str,'DD'));//查找字符串首次出现的位置
+var_dump(strpos($str,'ff'));//返回int 6
+
+if(strpos($str,'a')===false){
+	echo '没有找到！';
+}else{
+	echo '有找到！';
+}
+if(strpos($str,'a')!==false){
+	echo '有找到！';
+}else{
+	echo '没有找到！';
+}
+
+if(strpos($str,'a')){  //这里所查找的字符串在第一位，返回0，被if语句自动转换成bool false了，所以不能这么写
+	echo '有找到！';
+}else{
+	echo '没有找到！';
+}
+
+var_dump(strstr($str,'ff')); //返回从ff开始，后面所有的字符都被输出
+var_dump(strstr($str,'ff',true));//返回ff前面的字符串
+*/
+
+/*
+//字符替换
+$str='acabcsff   abcabc123456edDDFDDFDFfdlfsavcbca   cbsa';
+$STR=str_replace('cbsa','CBSA',$str);  //替换cbsa成大写CBSA
+echo $STR;
+var_dump($STR);//原来的字符串不受影响
+$str1=str_replace(array('1','2','3'), array('一','二','三'), $str, $count); //批量替换，用数组类型 $count是指替换发生的次数
+var_dump($str1);
+echo $count; //输出$count，3
+
+
+$str=array(
+	'123sdfsd',
+	'dfsd231d',
+	'fgdSS311'
+);
+$str1=str_replace(array('1','2','3'), array('一','二','三'), $str, $count); //批量替换，用数组类型 $count是指替换发生的次数
+var_dump($str1);
+echo $count; //数组进去，数组出来，每一个字符都被替换掉
+*/
+
+/*
+ * 五、与html标签相关的函数
+	1.htmlspecialchars
+		$str=<<<START
+		<p style="color:red;font-size:128px;">单位确定为取得完全</p>" '
+		START;
+		echo $str;
+		echo "\n";
+		echo htmlspecialchars($str);
+	2.strip_tags
+		$str=<<<START
+		<p style="color:red;font-size:128px;">单位确定为取得完全</p>
+		<div style="color:red;">的武器大全我</div>
+		START;
+		//echo $str;
+		//echo "\n";
+		echo strip_tags($str,"<div><p>");
+六、字符串截取函数
+	1.substr
+		$str='testdqwdwqdwqdqdwq';
+		echo substr($str,3,2);   //从第4位开始截取，取2位
+
+		$str='test';
+		echo substr($str,-3,2);  //从倒数第3位开始取，取两位
+七、字符串分隔函数
+	1.explode
+		$str='test,test1,test2,test3';
+		var_dump(explode(',',$str,2));    //使用,分割字符串，参数2是指最多分成两段，可以不传这个参数，那么只要遇到,就分割
+	2.str_split
+		$str='test';
+		var_dump(str_split($str,3)); //分割字符，参数3是表示每3个字符分割成一段；
+		
+
+
+//htmlspecialchars
+$str=<<<START
+	<P style="color:red; font-size:28px;">"这里是定界符中的字符串"’’‘''"''d'd''d'd'd'"’’‘</P>
+	<div style="color:red;">这里是div中的字符串</div>
+	<a style="color:green;">a标签的内容</a>
+START;
+//echo $str;
+//echo "\n";
+//echo htmlspecialchars($str,ENT_QUOTES);  //特殊字符都被转换成实体，这样浏览器不会去看，以免有人在留言板恶意留下代码。第二个参数是将单双引号也转换了，一般不用
+//echo "\n";
+//echo strip_tags($str);//清除/去除掉标签
+//echo strip_tags($str,"<div>");//所有div标签和div内的标签都会保留
+echo strip_tags($str,"<div><p>");//所有div,p标签和他们内的标签都会保留
+
+//字符串截取
+$str='abcd1234';
+echo substr($str, 2);//从c开始向右边取
+echo '<br />';
+echo substr($str, 2,4);//从c开始向右边取，取4个字符
+echo '<br />';
+echo substr($str, -4);//从倒数第四位开始取
+echo '<br />';
+echo substr($str, -3,2);//从倒数第三位开始取，取2位
+ */
+ //字符串分割
+//$str='str00,str01,str02,|str03,str04,str05';
+//echo explode(',', $str);//因为这里返回的是数组，不能直接输出
+//var_dump(explode(',', $str));//用 , 将制定字符串分割，以数组输出
+//var_dump(explode('|', $str));//用  | 将制定字符串分割，以数组输出
+//var_dump(explode(',', $str,2));//只分割成以下两段
+/*array (size=2)
+0 => string 'str00' (length=5)
+1 => string 'str01,str02,|str03,str04,str05' (length=30)
+*/
+$str='hello nihao hi 你好吗？';
+var_dump(str_split($str));//汉字占3个字符，所以会有乱码输出
+var_dump(str_split($str,3));
+?>

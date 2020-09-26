@@ -1,0 +1,138 @@
+一、 变量/常量
+  1. 变量： 变量赋值引用；类型；命名规则；
+  2. 常量： define('常量名称',常量值) 或者 define("常量名称",常量值) --> define('MY_NAME','Jack猫'); //常量常规定义方法
+
+二、 流程控制
+分支执行：
+  1.if语句
+  2.switch语句
+        $a=2;
+        switch ($a){//switch语句最好是用来判断整型或字符串类型数据，以更加精确，用if语句判断bool型的
+          case 1:
+            echo '周一';
+            break;
+          case 2:
+            echo '周二';
+            break;
+          case 3:
+            echo '周三';
+            break;
+          case 4:
+            echo '周四';
+            break;
+          case 5:
+            echo '周五';
+            break;
+          case 6:
+            echo '周六';
+            break;
+          case 7:
+            echo '周天';
+            break;
+          default:
+            echo '数字不匹配<br />';
+        }
+循环执行：
+    1.while语句
+        $a=20;
+        while($a<=30){
+          echo $a++.'<br />';
+        }
+        echo 'game over';
+    2.do...while语句
+       $i=0;
+        do{
+          echo $i++.'<br />';
+        }while($i<=10);
+          echo 'while语句执行完毕！';//do while语句至少会执行一次，和while语句的不同点，是先执行的
+    3.for语句
+    for($i=0,$j=0;$i<=10;$i++,$j++){ //这里多个表达式用,分开
+	             echo "{$j}执行到了第{$i}遍.<br />";
+          }
+ 特殊的流程控制语句
+    1.break语句
+    作用：用于switch语句，for，while，do...while，foreach，用于中断这些语句！
+    后面可以接上一个数字来表示跳出几层循环！默认不加就是跳出当前循环语句！
+    2.continue语句
+    作用：只能用在循环语句，跳出本次循环，并不是结束整个循环语句！
+    3.exit()语句
+    作用：结束当前整个程序的执行！
+    die()
+    
+    实例：
+    for($i=0;$i<=10;$i++){
+        echo "<p style='color:red'>\$i执行到了第{$i}遍。</p>";//用反斜杠转义，这样能输出变量名
+        for($j=0;$j<=10;$j++){
+          if($j==5){
+            break 2; //break后面加数字几，就是跳出第几层;默认不加，或者1表示跳出当前循环
+          }
+          echo"---\$j执行到了第{$j}遍。<br />";
+        }
+      }
+
+      for($i=0;$i<=10;$i++){
+        if($i==5){
+          continue;//$==5的时候，跳出本次循环，继续下一次
+        }
+        echo "\$i执行到了第{$i}遍。<br />";
+      }
+      */
+
+      for($j=0;$j<=10;$j++){
+        echo "----\$j执行到了第{$j}遍。<br />";
+      }
+      for($i=0;$i<=10;$i++){
+        if($i==5){
+          //exit('非法操作，程序即将结束运行！');//$==5的时候，结束程序(整个php脚本)运行
+          die();//exit的别名
+        }
+        echo "\$i执行到了第{$i}遍。<br />";
+      }
+      ?>
+
+php函数（注意函数返回值的问题）：
+  function add($a,$b){
+    echo $a+$b.'<br />';
+    return $a+$b;
+    echo 'return后，这句话不会被执行。';
+
+  }
+  $i=add(1,2);//将返回值保存到变量$i,没有return的情况下，返回null
+  echo '<br />'.'看看返回值是多少'.':'.$i; //输出$i，相当于输出了返回值
+
+
+PHP变量的范围
+	1.局部变量
+		function test(){
+			$a=1;//局部变量$a，仅仅在这个函数内部有效
+		}
+		echo $a;
+	2.全局变量
+		$i=10;//全局变量（外部变量）
+		define('MY_NAME','孙胜利');
+		function test(){
+			echo MY_NAME;
+			global $i;//声明$i为全局变量,然后再这个函数内部就可以使用$i，这里如果不声明会报错；
+			echo $i;
+			$a=1;
+		}
+		test();
+	3.静态变量
+		function test(){
+			static $a=10;//定义静态变量，开辟专门的内存存放该变量，这里初始化变量值，本函数执行完毕，变量不会消失，在程序内再次调用会使用上一次运行的结果，直到程序运行结束
+			echo ++$a;//当第二次执行这个函数的时候$a这个变量依然存在并且里面的也值依然存在！
+		}
+		test();
+		echo '<br />';
+		test();
+		echo '<br />';
+		test();
+		echo '<br />';
+		test();
+		echo '<br />';
+		test();
+		echo '<br />';
+		test();
+		echo '<br />';
+		test();
+

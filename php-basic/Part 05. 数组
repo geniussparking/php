@@ -1,0 +1,378 @@
+数组：
+	具体的见图解！
+一、数组类型
+	见图解！
+	//索引数组：索引值是整型，那么这个数组就是索引数组；
+	//关联数组：索引值为字符串的数组,使用字符串作为索引，这使得编程更加人性化！这在其他编程语言中非常少见
+二、数组创建
+	PHP中创建数组非常灵活，与其他许多编程语言不同的是PHP不需要在创建数组时，指定数组的大小，甚至不需要在使用数组之前声明，也可以在同一个数组中存
+    储任何类型的数据。
+    .直接为数组元素赋值即可创建数组。
+    .使用array()语言结构创建数组。
+	方法一、
+		变量名称[索引值]=数据;
+		变量名称[]=数据;//不写索引值默认是 索引数组，从0开始
+	方法二、
+		变量名称=array(
+			索引值key=>数据,
+			..........
+		);
+	数据里面还可放数组类型的数据，同一个数组中存储任何类型的数据
+	多维数组：
+		访问数值的方法
+		变量名称[索引值][索引值]....
+//创建数组方法一
+ * //$student[索引值]=具体值
+$student[0]=60;
+$student[1]='老大';
+$student[2]=true;
+$student['d']='01';//字符窜也能做索引值，叫“关联数组”，如果索引值是整型，那么是叫索引数组
+print_r($student); //打印数组使用这个函数;
+var_dump($student);
+
+
+//创建数组方法二
+//$student[]=具体值
+//如果省掉索引值不写，那么索引值默认就是整数，从0开始
+$student[]=80;
+$student[]='老二';
+$student[]=false;
+$student[]='05';
+$student[]='';
+$student[]='';
+$student[]='';
+$student[]='';
+$student[]='';
+print_r($student);
+var_dump($student);
+ echo $student[0];//使用数组里面某个具体值
+
+*/
+/*
+//创建数组方法三，通过array
+$student=array(10,'字符串',66.89,'',true,false);//array的简便写法
+var_dump($student);
+
+
+$student1=array(
+		0=>11,
+		1=>'字符串1',
+		2=>66.891,
+		3=>'',
+		4=>false,
+		5=>true
+);
+var_dump($student1); //array的复杂写法
+
+$student2['num']=01;
+$student2['name']='Jack';
+$student2['sex']=true;
+$student2['age']=25;
+var_dump($student2);//用字符串做索引值，叫关联数组
+echo $student2['name'];//可以直接输出数组里面某个值，使用数组里面某个具体值
+
+
+//二维数组
+$students=array(
+		0=>array(1,'Mike',true,60.5),
+		1=>array(2,'Rose',false,70.5),
+		2=>array(3,'Li',false,80.5),
+		3=>array(4,'Lining',true,75.5),
+);
+var_dump($students);
+
+$students1=array(
+		'st1'=>array(1,'Mike',true,60.5),//也可以不写索引值
+		'st2'=>array(2,'Rose',false,70.5),
+		'st3'=>array(3,'Li',false,80.5),
+		'st4'=>array(4,'Lining',true,75.5),
+);
+var_dump($students1);
+echo $students[0][1].'<br />';
+echo $students1['st2'][1]; //可以取出二维数组里面的某个具体的值
+*/
+
+/*
+ * 
+三、数组的遍历
+
+PHP中很少需要自己手动将大量的数据赋值到数组变量中，而是通过调用其他函数
+    返回结果集（这些结果集数据很多情况下都是数组类型）,使用数组类型返回的目
+    的是将多个相互关联的数据，组织在一起形成集合，以方便我们的批量处理的目
+    的，所以我们实际工作中遍历数组的需求比较多！
+
+	遍历数组：每个都经历一遍的意思
+	1）for循环
+		用的比较少，因为有缺陷，count()只能遍历索引数组，不能遍历关联数组；
+	2）foreach语句来实现遍历数组的目的
+		foreach(数组变量 as 变量1){
+			//每次循环执行的语句
+			变量1代表当前正在经历（访问）的数据，即数组的元素,通常使用变量$value；
+		}
+		$students=array(
+		'学生1'=>'李雷',
+		'学生2'=>'李伟',
+			);
+		foreach($students as $value){
+		echo $value.'<br />';
+		}
+
+		foreach(数组变量 as 变量1=>变量2){
+			//每次循环执行的语句
+			变量1代表当前正在经历（访问）的数据的索引值，通常使用变量$key;
+			变量2代表当前正在经历（访问）的数据,通常使用变量$value;
+		}
+		$students=array(
+		'学生1'=>'李雷',
+		'学生2'=>'李伟',
+		);
+		foreach($students as $key => $value){  //这里的$key=>$value是规定这么写的，变量名可以随便，但是中间的=>是规定，因为数组的格式就是这样的；
+			echo $key.'=>'.$value.'<br />';   //花括号里面就可以灵活的使用两个变量了，$key代表索引值，$value代表数组元素的值;
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+$arr=array(
+	'a','b','c','d','e','f'
+);
+
+for($i=0;$i<count($arr);$i++){   //这里不能写$i<=count($arr);因为count($arr)=6，而数组里面是0-5
+	echo $arr[$i].'<br />';//for循环不能用在关联数组里，因为索引值是字符串，不是整型
+}
+
+ */
+/*
+//count()函数是系统内部函数,计算数组元素的个数；
+//echo count($arr); //返回数组$arr的数据的个数
+
+//count(); 
+$arr=array(
+	array(1,2,3),
+	array(4,5,6)
+);
+echo count($arr).'<br />';//输出2，只输出了一层
+echo count($arr,1); //这样可以输出所有数据的个数，8（2+6）个。这里的1是选填；
+
+
+//foreach()比较常用，专门用来遍历数组，索引数组和关联数组都可以
+$arr=array(
+	'num'=>15,
+	'name'=>'jack',
+	'age'=>'18',
+	'score'=>'78.5'
+);
+/*foreach($arr as $value){  //$value这个变量随便什么都可以
+	echo $value.'<br />';
+}
+
+foreach($arr as $key=>$value){  //这样可以输出索引值+数据
+	echo $key.'=>'.$value.'<br />';
+}
+
+$arr=array(
+	'a',
+	'b',
+	'c',
+	'd',
+	array(
+		1,
+		2,
+		3,
+		4,
+		5
+	)
+);
+
+ foreach($arr as $value){
+	//echo $value.'<br />';  //遇到数组里面嵌套数组，而且是不规律的情况，因为echo不能直接输出数组，所以暂时只能用var_dump();来输出类型
+	var_dump($value);//但是这样并没有解决拿到数据的问题，以后用递归思想可以解决
+}
+
+
+$arr=array( //有规律的数组用foreach嵌套
+	array('张三','李四','王五','赵六'),
+	array('01','02','03','04'),
+	array(17,18,17,18),
+	array(65,67.5,70.5,85.5),
+);
+
+foreach($arr as $val1){        //$val1是数组$arr里面的元素，这些元素是数组；
+	foreach($val1 as $val2){     //$val2是数组$val1的元素，这些元素是字符串和数字；
+		echo $val2.'<br />';
+		
+	}
+}
+
+$students=array(
+	array('李雷',26,'男',88,'北京'),
+	array('张三',28,'女',78,'上海'),
+	array('李四',24,'男',68,'广州'),
+	array('王五',29,'女',85,'深圳'),
+	array('赵六',23,'男',95,'福州'),
+);
+foreach($students as $value){
+	foreach($value as $key=>$value1){
+		echo $key.'=>'.$value1.'<br />';
+	}
+}
+
+
+//完整输出固定格式的表格
+$arr=array(
+	array('李雷',1,true,70.5),
+	array('张三',2,true,60.5),
+	array('李四',3,false,75.5),
+	array('王五',4,false,50.5),
+);
+echo "<table border='1'>";
+foreach($arr as $val1){
+	if($val1[2]===true){     //将数据替换一下，因为数组里面写的是true和false，false输出来是空白；
+		$val1[2]='男';
+	}else{
+		$val1[2]='女';
+	}
+	*/
+/*	 //这是写活的办法，用for循环输出每一个数组的值
+	echo "<tr>";
+	for($i=1;$i<=count($val1);$i++){
+		echo "<td>".$val1[$i-1]."</td>";
+	}
+	echo "</tr>";
+	}
+*/  
+	
+/*   //这是写死的办法，直接规定第几行输出什么
+	echo "<tr>
+			<td>$val1[0]</td>
+			<td>$val1[1]</td>
+			<td>$val1[2]</td>
+			<td>$val1[3]</td>
+		</tr>";
+}
+echo "</table>";
+*/
+
+/*
+四、预定义超全局数组变量
+已经定义好了（存在）的变量(存放的数据的类型是数组)。
+超全局：超级全局变量，作用域（有效区域）！http://php.net/manual/zh/language.variables.superglobals.php
+$_SERVER; $_GET; $_POST; $GLOBALS;
+传递数据（提交数据）给服务器端主要两种方式
+1.get方式
+比如：
+?参数名=参数值&参数名=参数值......
+http://localhost/demo5_3/index.php?参数名=参数值
+在服务器端（请求的php文件这边）可以通过$_GET来获取到
+$_GET索引值为参数名，索引值对应的数据就是参数值
+2.post方式
+比如表单 post发送过来的！
+可以通过$_POST来获取到!
+*/
+
+//$_GET,在浏览器地址栏输入的格式：http://localhost/php_test/Part4_shuzu/index.php?id=20&name=jack 
+/*
+foreach($_GET as $key=>$value){
+	echo $key.'=>'.$value.'<br />';
+}
+通过以上foreach语句能输出：
+id=>20
+name=>jack
+
+或者通过var_dump($_GET);输出
+E:\wamp64\www\php_test\Part4_shuzu\index.php:250:
+array (size=2)
+  'id' => string '20' (length=2)
+  'name' => string 'jack' (length=4)
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>预定义超全局数据变量</title>
+</head>
+<body>
+<form method='GET'>
+	GET方式：<br />  <!-- 填写账号密码提交后，在浏览器地址栏出现明文，不安全 ，var_dump($_GET);-->
+	<input type='text' name='username'/> <br />
+	<input type='password' name='pw'/> <br />
+	<input type='submit' value='提交'/> <br />
+</form>
+<form method='POST'> <!-- post方式不是明文，填写账号密码后没有出现明文，var_dump($_POST); -->
+	POST方式： <br />
+	<input type='text' name='username'/> <br />
+	<input type='password' name='pw'/> <br />
+	<input type='submit' value='提交'/> <br />
+</form>
+</body>
+</html>
+
+
+五、处理数组的相关函数
+	php参考手册：函数参考--与变量和类型有关的扩展--数组
+	我们挑几个讲一下，并不是这几个重要其他的不重要，而通过这几个的学习让大家学会怎么通过查手册来使用数组相关的函数！
+	1)array_count_values
+		$array = array(1, "hello", 1, "world", "hello");
+		$arr=array_count_values($array);//函数返回数组类型的数据,以元素值作为索引值，同一个元素值的个数为元素值；
+		print_r($array);  //原来的数组不会受到任何影响
+	2)array_key_exists    //查找某键值是否存在，返回bool类型值；
+		$search_array = array('first' => 1, 'second' => 4);
+		var_dump(array_key_exists('second',$search_array));
+	3)array_search     //查找某元素值是否存在，存在返回键值，不存在返回bool值；
+		$array = array(0 => 'blue', 1 => 'red', 2 => 'green', 3 => 'red',4=>15);
+		var_dump(array_search('15', $array,true));   //这里第三个参数是true，要求进行值的类型匹配；
+	4)count
+		$array = array(0 => 'blue', 1 => 'red', 2 => 'green', 3 => 'red',4=>15);
+		var_dump(count($array));
+	5)in_array    //查找某个值是否存在，只返回bool值；
+		$os = array("Mac", "NT", "Irix", "Linux");
+		var_dump(in_array('Mac', $os));
+	6)list
+		$arr=array(60,80,100);
+		list($sunshengli,$xiaohong,$xiaoming)=array(60,80,100);    //将数组里面的值从右到左赋值给list里面的变量，100给$xiaoming
+		echo $sunshengli;
+		
+		$arr=array(60,80,100);
+		list($sun[],$sun[],$sun[])=array(60,80,100); 
+		print_r($sun);  //这里输出来是这样：Array ( [0] => 100 [1] => 80 [2] => 60 )，从右到左赋值，因为是将值赋值给数组，所以默认从0开始；
+		
+	7)asort
+		$students=array(
+			'sunshengli'=>60,
+			'lilei'=>80,
+			'hanmeimei'=>100,
+			'zhangsan'=>90
+		);
+		asort($students);
+		print_r($students);
+		直接对数组里面的数据进行排序，第二个参数
+			SORT_REGULAR - 正常比较单元（不改变类型） 
+			SORT_NUMERIC - 单元被作为数字来比较 
+			SORT_STRING - 单元被作为字符串来比较 
+			SORT_LOCALE_STRING - 根据当前的区域（locale）设置来把单元当作字符串比较。
+	8)array_filter
+		function odd($var)
+		{
+			return($var % 2 == 1);
+		}
+
+		function even($var)
+		{
+			return($var % 2 == 0);
+		}
+
+		$array1 = array("a"=>1, "b"=>2, "c"=>3, "d"=>4, "e"=>5);
+		$array2 = array(6, 7, 8, 9, 10, 11, 12);
+
+		echo "Odd :\n";
+		print_r(array_filter($array1, "odd"));   //调用odd这个函数，就是回调函数；
+		echo "Even:\n";
+		print_r(array_filter($array2, "even"));
+	
+*/
+		?>

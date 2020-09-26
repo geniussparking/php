@@ -1,0 +1,281 @@
+<?php
+/*
+ * 任何数据类型变量所存储的数据，都是在程序运行时才加载到内存中，而不能持久保存，那么如果需要将数据长久的保存起来，主要有两种办法，保存到普通文件中或者保存到数据库中。
+ * 我们的PHP可以在我们的服务器上生成目录，创建、编辑、删除、修改文件属性等操作！
+一、判断普通文件和目录(文件夹)
+
+二、文件的属性
+
+三、目录的基本操作
+
+四、文件的基本操作
+
+五、文件的上传
+
+六、文件的下载
+
+一、判断普通文件和目录
+	 1.is_file()//判断给定文件名是否为一个正常的文件
+	 2.is_dir()//判断给定文件名是否是一个目录
+二、文件的属性
+	 1.file_exists()//检查文件或目录是否存在
+	 2.filesize()//取得普通文件大小
+	 3.is_readable()//判断给定文件名是否可读
+	 4.is_writable()//判断给定的文件名是否可写
+	 5.filectime()//获取文件的创建时间
+	 6.filemtime()//获取文件的修改时间
+	 7.fileatime()//取得文件的上次访问时间
+	 8.stat()//获取文件大部分属性值
+三、目录的基本操作
+	 1.basename()//返回路径中的文件名部分
+	 2.dirname()//返回路径中的目录部分
+	 3.pathinfo()//返回文件路径的信息
+	 4.opendir()//打开目录句柄
+	 5.readdir()//从目录句柄中读取条目,返回目录中下一个文件的文件名
+	 6.rewinddir()//倒回目录句柄
+	 7.closedir()//关闭目录句柄
+	 8.mkdir()//新建目录
+	 9.rmdir()//删除指定的空目录
+	 10.scandir()//列出指定路径中的文件和目录
+四、文件的基本操作
+	 1.fopen()//打开文件或者 URL
+	 2.fread()//读取文件
+	 3.fgets()//从文件指针中读取一行
+	 4.feof()//测试文件指针是否到了文件结束的位置
+	 5.fwrite()//写入文件
+	 6.rewind()//倒回文件指针的位置
+	 7.flock()//文件锁定,在进行写操作前需要对文件进行锁定，写完了解锁
+	 8.ftruncate()//将文件截断到给定的长度
+	 9.fclose()//关闭一个已打开的文件指针
+	 10.file() //把整个文件读入一个数组中
+	 11.copy()//拷贝文件
+	 12.unlink()//删除文件
+	 13.file_get_contents()//将整个文件读入一个字符串
+	 14.file_put_contents()//将字符串写入文件中
+	 15.rename()//重命名一个文件或目录
+	 16.readfile()//读入一个文件并写入到输出缓冲
+五、文件的上传
+        1.html标签需要做的上传设置
+           1) form标签属性设置 
+                1>method设置为post
+                2>enctype设置为multipart/form-data
+                3>form表单中设置隐藏类型的input,其中name值设置为MAX_FILE_SIZE,VALUE值设置为需要限制的上传文件的大小(单位为字节)
+        2.在服务器段通过PHP处理上传文件，涉及到下面的几条信息
+           1)设置 php配置文件(php.ini)
+                配置项                             可能值                     功能描述
+                file_uploads                       ON                        确定服务器上的PHP脚本是否可以接受HTTP文件上传
+                memory_limit                  	   8M                        设置脚本可以分配的最大内存量，防止失控的脚本独占服务器内存
+                upload_max_filesize                2M                        限制PHP处理上传文件的最大值，此值必须小于post_max_size值
+                post_max_size                      8M                        限制通过POST方法可以接受的信息最大量,因为除了上传的文件，可能还有别的信息也要通过post上传
+                upload_tmp_dir                     F:wamp/temp               上传文件存放的临时路径，可以是一个绝对路径。这个目录对于拥有此服务器进程用户必须是可写的
+           2)$_FILES多维数组：用于存储各种与上传有关的信息
+                $_FILES['file']['name']             客户端机器文件的原名称，包含扩展名
+                $_FILES['file']['size']                已上传文件的大小，单位为字节
+                $_FILES['file']['tmp_name']    文件上传之后，在服务器端存储的临时文件名
+                $_FILES['file']['error']              文件上传时产生的错误
+                                                                   0：表示没有发生任何错误，文件上传成功
+                                                                   1：表示上传文件的大小超出了再PHP配置文件中upload_max_filesize选项限制的值
+                                                                   2：表示上传文件大小超出了HTML表单中MAX_FILE_SIZE选项所指定的值
+                                                                   3：表示文件只被部分上传
+                                                                   4：表示没有上传任何文件
+                $_FILES['file']['type']              获取客户端上传文件的MIME类型，MIME类型规定了各种文件格式的类型。每种MIME类型都是由/分隔的主类型和子类型组成
+           3)PHP的文件上传处理函数：用于上传文件的后续处理
+                1>is_uploaded_file()判断指定的文件是否通过HTTP POST上传的
+                2>move_uploaded_file()文件上传后，首先会存储于服务器的临时目录中，可以使用该函数将上传的文件移动到新位置
+六、文件的下载
+        1)发送指定的文件MIME类型的头信息
+            header('Content-type:MIME类型');
+	    获取MIME类型需要fileinfo扩展，wampserver已经有了PHP_fileinfo扩展，只需要安装一下就好，点击PHP扩展...
+	    然后再去php官网去找fileinfo函数，在函数参考--文件系统相关扩展里面找到Fileinfo函数
+	    点击finfo_open，点击Fileinfo 常量，找到FILEINFO_MIME_TYPE (integer)
+        2)指定下载文件的描述
+            header('Content-Disposition:attachement;filename=文件名称');
+        3)指定下载文件的大小
+            header('Content-Length:文件大小');
+        4)读取文件内容至输出缓冲区
+            readfile();
+ */
+//$file=is_file('index.php');
+//var_dump($file);//是文件吗？是文件，E:\wamp64\www\php_test\Part10_File\index.php:97:boolean true
+//var_dump(is_file('../Part10_File'));//是文件吗？不是，目录不算做文件。E:\wamp64\www\php_test\Part10_File\index.php:98:boolean false
+//var_dump(is_file('../Part10_File/index.php'));//这才是文件
+//var_dump(is_dir('../Part10_File'));//是文件夹吗？是的-->:boolean true
+//var_dump(file_exists('../Part10_File/'));//文件或文件夹存在吗？存在：-->boolean true
+//var_dump(filesize('../Part10_File/index.php'));//文件大小？返回-->int 6542  单位是字节
+//var_dump(filesize('../Part10_File/111.exe')/1024/1024);//size可以由字节换算成M。只能计算普通文件的大小，不能计算目录的
+//var_dump(filectime('../Part10_File/111.exe'));//返回文件创建时间，这里默认输出的是时间戳，需要转化。
+//date_default_timezone_set('Asia/Shanghai');//输出时间前需要设置时区
+//echo date('Y-m-d G:i:s',filectime('../Part10_File/111.exe'));
+//echo date('Y-m-d G:i:s',fileatime('../Part10_File/111.exe'));//文件上次访问的时间
+//var_dump(stat('../Part10_File/index.php'));//获取文件大部分信息
+//echo __FILE__; //获取当前文件的路径-->E:\wamp64\www\php_test\Part10_File\index.php
+//echo __FILE__.'<br />';
+//echo basename(__FILE__);//返回index.php，文件名
+//echo dirname(__FILE__);//返回文件所在目录名E:\wamp64\www\php_test\Part10_File
+//echo dirname(dirname(__FILE__));//E:\wamp64\www\php_test
+//var_dump(pathinfo(__FILE__));//返回文件的相关信息，如下数组。
+/*
+array (size=4)
+'dirname' => string 'E:\wamp64\www\php_test\Part10_File' (length=34)
+'basename' => string 'index.php' (length=9)
+'extension' => string 'php' (length=3)
+'filename' => string 'index' (length=5)
+*/
+//var_dump(opendir('../Part10_File')); //返回：E:\wamp64\www\php_test\Part10_File\index.php:122:resource(3, stream)
+// $dir=opendir('../Part10_File');//打开一个目录句柄
+// var_dump(readdir($dir)); //读取一个目录句柄，返回目录中下一个文件的文件名。文件名以在文件系统中的排序返回。 这里返回一个点string '.' (length=1)。目录句柄：炒菜的锅，相当于锅把
+// var_dump(readdir($dir));//  . 代表当前目录，..代表上一级目录 ， 每一个文件夹里面都有个点
+// var_dump(readdir($dir));//依次开始读取文件名
+// var_dump(readdir($dir));//读完了就返回false
+// var_dump(rewind($dir)); //倒回目录句柄，从头开始读
+// var_dump(readdir($dir));
+// closedir($dir);//关闭目录句柄
+// var_dump(readdir($dir));//已经关闭，无法再读取
+//var_dump(mkdir('newFolder'));//新建一个文件夹。 var_dump()会返回结果，如果是true则新建成功
+//var_dump(mkdir('a/b/c',0777,true));//第二个参数0777是指新建的文件夹可读可写；true不写不能新建
+//var_dump(rmdir('a/b/c'));//删除空目录
+//var_dump(scandir('../Part10_File'));//列出指定目录里面所有的文件（句柄）
+//var_dump(scandir('E:',1));//参数1是要求降序排列
+
+/*
+ * fopen() 中 mode 的可能值列表
+mode说明
+'r' 只读方式打开，将文件指针指向文件头。  
+'r+' 读写方式打开，将文件指针指向文件头。  用fwrite写入会覆盖后面的内容
+'w' 写入方式打开，将文件指针指向文件头并将文件大小截为零。如果文件不存在则尝试创建之。  
+'w+' 读写方式打开，将文件指针指向文件头并将文件大小截为零。如果文件不存在则尝试创建之。  
+'a' 写入方式打开，将文件指针指向文件末尾。如果文件不存在则尝试创建之。  
+'a+' 读写方式打开，将文件指针指向文件末尾。如果文件不存在则尝试创建之。  
+'x' 创建并以写入方式打开，将文件指针指向文件头。如果文件已存在，则 fopen() 调用失败并返回 FALSE，并生成一条 E_WARNING 级别的错误信息。如果文件不存在则尝试创建之。这和给 底层的 open(2) 系统调用指定 O_EXCL|O_CREAT 标记是等价的。此选项被 PHP 4.3.2 以及以后的版本所支持，仅能用于本地文件。  
+'x+' 创建并以读写方式打开，将文件指针指向文件头。如果文件已存在，则 fopen() 调用失败并返回 FALSE，并生成一条 E_WARNING 级别的错误信息。如果文件不存在则尝试创建之。这和给 底层的 open(2) 系统调用指定 O_EXCL|O_CREAT 标记是等价的。此选项被 PHP 4.3.2 以及以后的版本所支持，仅能用于本地文件。  
+ */
+
+// header('Content-type:text/html;Charset=utf-8');//设置编码，utf-8编码，一个汉字占3个字节
+// $file=fopen('test.txt', 'r');//以只读方式打开一个文件句柄
+// var_dump(fread($file, 1));//读取文件,读取长度是1个字节
+// var_dump(fread($file, 1));//按顺序一个个读取
+// var_dump(fread($file, 1));
+// var_dump(fread($file, 1));
+// var_dump(fread($file, 1));
+// var_dump(fread($file, 1));
+// var_dump(fread($file, 1));
+// var_dump(fread($file, 3));//汉字占3个字节
+// var_dump(fread($file, 3));
+
+
+// header('Content-type:text/html;Charset=utf-8');//设置编码，utf-8编码，一个汉字占3个字节
+// $file=fopen('test.txt', 'r');//以只读方式打开一个文件句柄
+// var_dump(fgets($file));//从文件指针中读取一行
+// var_dump(fgets($file));//一行行读取
+// var_dump(fgets($file));
+// var_dump(feof($file));//测试文件指针是否到了文件结束的位置
+// var_dump(fgets($file));
+// var_dump(feof($file));//每读取一行测试一下有没有到文件结束的位置
+
+//看看强大的fopen()还能干啥，注意fopen一般是配合其他文件操作函数一起使用，
+// header('Content-type:text/html;Charset=utf-8');//设置编码，utf-8编码，一个汉字占3个字节
+// $file=fopen('test1.txt', 'w+');//用w+这个比较厉害，读写，将之前的同名文件里面的内容清零
+// $write=fwrite($file, '这里是fwrite()函数写入测试4！！');//写入内容，保存
+// //$file=fopen('test1.txt', 'r');//如果下面要再次操作这个文件，需要再次打开文件句柄
+// //var_dump(fgets($file));
+//  if($write){
+//  	$file=fopen('test1.txt', 'r');
+//  	var_dump(fgets($file));
+//  }else {
+//  	echo '写入失败，请检查！';
+//  }
+
+// //fseek函数，定位指针。查查手册看用法
+// header('Content-type:text/html;Charset=utf-8');
+// $file=fopen('test1.txt', 'r+');//r+ 读写方式打开，文件指针指向末尾
+// // fseek($file, 0, SEEK_END);//指向末尾
+// // $write=fwrite($file, 'fseek函数测试');
+// // var_dump($write);//返回写入的字节数
+// fseek($file, 2, SEEK_END);//SEEK_END是将指针指向末尾，然后2是向左偏移2个字节，中英文测试都是乱码，测试失败
+// $write=fwrite($file, 'fseek int 3');
+// var_dump($write);//
+
+//flock用法
+/*
+header('Content-type:text/html;Charset=utf-8');
+$file=fopen('test1.txt', 'a+');
+if(flock($file, LOCK_EX+LOCK_NB)){  //LOCK_NB参数是指当有别的程序在写入的时候，这个程序就退出，返回false,如果不写+LOCK_NB则是继续等待，别的进程完毕，这个进程开始
+	sleep(10);//程序延迟10秒执行,因为已经锁定文件，在这10秒内，别的进程也无法进行写入
+	fwrite($file, 'flock函数可以锁定本文件，在函数执行时，不让别的进程进行写入，所有别的进程只能等待。');
+	flock($file, LOCK_UN);//已经执行完毕，取消锁定，别的进程可以开始写入
+	fclose($file);//关闭文件句柄
+}
+*/
+// header('Content-type:text/html;Charset=utf-8');
+// //var_dump(file_get_contents('test1.txt'));//将整个文件读入一个字符串
+// //var_dump(file_get_contents('http://www.baidu.com'));//也可以读取一个网站的内容，然后存入一个变量
+// $siteContent=file_get_contents('http://www.baidu.com');
+// var_dump($siteContent);
+
+
+// header('Content-type:text/html;Charset=utf-8');
+// $siteContent=file_get_contents('http://www.baidu.com');//获取一个网站的内容，存入一个变量
+// $copy=file_put_contents('file_put_contents.html', $siteContent);//将内容写入一个文件
+// if($copy){
+// 	echo '成功复制网站！'; //if函数判断是否复制成功
+// }else{
+// 	echo '复制失败！';
+// }
+
+//文件上传：上传过程不需要知道，上传的文件默认是存在一个临时文件夹的，我们需要把这个文件移动到我们需要的文件夹就可以了
+header('Content-type:text/html;charset=utf-8');
+if(isset($_POST['submit'])){  //这里isset是指变量是否设置，这里检测是否有上传文件，有才会执行下面的语句
+	var_dump($_POST);
+	var_dump($_FILES);//默认上传上来的文件赋给这个数组，有详细的文件信息,注意区分和自定义常量__FILE__的区别
+	if(is_uploaded_file($_FILES['myfile']['tmp_name'])){   //is_uploaded_file是判断已经上传上来的文件是不是通过post上传的，这样可以防止恶意攻击。这里是检测已经上传在临时文件夹里的文件（通过文件名获取是哪个文件，因为$__FILES数组已经存了文件信息，用数组定位文件名就可以了）是否是 通过post上传
+		$arr=pathinfo($_FILES['myfile']['name']);//获取上传源文件的path信息，包含路径，文件名，拓展名，具体看手册：pathinfo() 返回一个关联数组包含有 path 的信息。包括以下的数组单元：dirname，basename 和 extension
+		$newName=date('YmdGis').rand(1000,9999);//将移动后的文件命名规则定为：年月日时分秒，再加4位随机数
+		if(move_uploaded_file($_FILES['myfile']['tmp_name'], 'uploads/'.$newName.'.'.$arr['extension']))//这里上传的文件夹文件名和拓展名都要指定清楚，脚本无法复制之前的文件名等信息，用var_dump是可以看有没有move成功
+		//var_dump(move_uploaded_file($_FILES['myfile']['tmp_name'], "uploads/{$newName}.{$arr['extension']}"));//觉得复杂的话用花括号和双引号写. $arr['extension']是获取的源文件的拓展名
+		{
+			echo 'success!';
+		}else{
+			echo 'failed';
+		}
+	}else{
+		exit('可能有攻击，请你做合法的事情！');
+	}
+}
+?>
+<!DOCTYPE html> 
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>上传页面</title>
+</head>
+<body>
+<form action="" method="post" enctype="multipart/form-data">  <!-- 上传文件html的form部分 -->
+	<input type="file" name="myfile" />
+	<input type="submit" name="submit" value="开始上传" />
+</form>
+</body>
+</html>
+
+//文件下载--就是用php文件来模拟另外一个文件,可以尝试用这里的代码模拟html文件，这样就可以隐藏真实的HTML文件地址了；
+//获取文件的信息的过程：
+// $file='a.exe'; //将文件名赋给一个变量
+// $fileInfo=finfo_open(FILEINFO_MIME_TYPE); //创建一个 fileinfo 资源，具体看finfo_open的说明
+// var_dump(finfo_file($fileInfo, $file));//finfo_file返回一个文件的信息，用var_dump输出--这一步是目的
+// finfo_close($fileInfo);// 关闭fileinfo资源 
+if(!function_exists('finfo_open')){ //加感叹号是指：如果函数不存在
+	header('Content-type:text/html;charset=utf-8');
+	exit('请先开启fileinfo扩展！');
+} //这里是判断php环境有没有开启fileinfo扩展：手册的函数参考，文件系统相关扩展，fileinfo函数，是需要安装相应扩展的
+$file='a.jpg'; 
+$fileInfo=finfo_open(FILEINFO_MIME_TYPE); 
+$mimeType=finfo_file($fileInfo, $file);//将文件类型赋给一个变量
+finfo_close($fileInfo);
+//发送指定的文件MIME类型的头信息---报文的知识，自己了解
+header('Content-type'.$mimeType);//告诉浏览器这个php文件是返回这个类型($mimeType)的文件
+//指定下载文件的描述
+header('Content-Disposition:attachement;filename='.basename($file));//指定下载文件的描述,这句可以不写
+//指定下载文件的大小
+header('Content-Length:'.filesize($file));
+//读取文件内容至输出缓冲区,相当于把文件发送给浏览器.这段代码最核心的部分就是读了这个文件($file)
+readfile($file);
+//现在http://localhost/php_test/Part10_File/index.php这个地址就相当于http://localhost/php_test/Part10_File/a.exe，打开就可以直接访问这个文件，浏览器认识的就直接打开，不认识的就下载

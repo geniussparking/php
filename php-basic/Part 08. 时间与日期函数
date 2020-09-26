@@ -1,0 +1,39 @@
+<?php
+/*
+ * 一、设置时区
+	date_default_timezone_set('Asia/Shanghai');//设置时区
+二、获取当前Unix时间戳
+	time()
+三、获取指定时间的Unix时间戳
+	mktime()
+	date_default_timezone_set('Asia/Shanghai');//设置时区
+	$nowTime=time();
+	$time1=mktime(0,0,0,10,1,2014);//取得一个日期的 Unix 时间戳,参数分别是：时，分，秒，月，天，年；
+	echo '距离2014年国庆还有'.(($time1-$nowTime)/60/60/24).'天';
+四、从Unix时间戳取得时间日期信息
+	date()格式化一个本地时间／日期
+	第一个参数:必填,写上你所需要的时间日期的格式,把format 字符放在第一个参数里面会被转换成对应的信息,其他的字符还是原来的样子
+	date('Y-m-d G:i:s')
+	自定义格式化Unix时间戳 为指定的时间格式!
+五、获取Unix时间戳和微秒数
+	microtime() 返回当前 Unix 时间戳和微秒数
+	var_dump(microtime());
+	var_dump(microtime(true));
+	
+ */
+//echo time(); //这里是Unix时间戳，从Unix纪元（格林威治时间1970年1月1日00时00分00秒）开始到当前的秒数。
+//var_dump(mktime(0,1,0,1,1,1970));
+/*$nowTime=time();
+$newYear=mktime(24,60,0,1,28,2017);
+echo '距离过年还有'.((int)(($newYear-$nowTime)/60/60/24)).'天。';
+date_default_timezone_set('Asia/Shanghai'); //设置时区，不然是默认格林威治时间
+echo date('Y-M-d H:i:s'); //获取当前时间。date();函数是格式化后的，传入相应参数就可以得到格式化后的时间信息。参数格式去手册找。
+var_dump(microtime());  //输出 php:32:string '0.90349300 1478566151' (length=21) 这种格式，前面小数点是微妙数，后面是秒数；
+var_dump(microtime(true));//可以传个true进去；输出：php:33:float 1478566349.9762，后面变成微秒数
+*/
+$start=microtime(true);
+for($i=0;$i<10000000;$i++){
+	
+}
+$end=microtime(true);
+echo '循环花了'.round(($end-$start),5).'秒';  //round();函数在参考手册数学函数里面：数学扩展--math函数，四舍五入，保留5位小数点.

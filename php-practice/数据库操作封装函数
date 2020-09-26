@@ -1,0 +1,292 @@
+<?php
+//把数据库配置定义为常量，放在单独的配置文件里面
+header('Content-type:text/html;charset=utf-8');
+define('DB_HOST','localhost');
+define('DB_USER','root');
+define('DB_PASSWORD','123456');
+define('DB_DATABASE','sfkbbs');
+define('DB_PORT',3306);
+
+<?php
+//数据库连接
+function connect($host=DB_HOST,$user=DB_USER,$password=DB_PASSWORD,$database=DB_DATABASE,$port=DB_PORT){
+	$link=@mysqli_connect($host, $user, $password, $database, $port);
+	if(mysqli_connect_errno()){
+		exit(mysqli_connect_error());
+	}
+	mysqli_set_charset($link,'utf8');
+	return $link;
+}
+//执行一条SQL语句,返回结果集对象或者返回布尔值
+function execute($link,$query){
+	$result=mysqli_query($link,$query);
+	if(mysqli_errno($link)){
+		exit(mysqli_error($link));
+	}
+	return $result;
+}
+//执行一条SQL语句，只会返回布尔值
+function execute_bool($link,$query){
+	$bool=mysqli_real_query($link,$query);
+	if(mysqli_errno($link)){
+		exit(mysqli_error($link));
+	}
+	return $bool;
+}
+//一次性执行多条SQL语句
+/*
+ 一次性执行多条SQL语句
+$link：连接
+$arr_sqls：数组形式的多条sql语句
+$error：传入一个变量，里面会存储语句执行的错误信息
+使用案例：属组类型保存sql语句
+$arr_sqls=array(
+	'select * from sfk_father_module',
+	'select * from sfk_father_module',
+	'select * from sfk_father_module',
+	'select * from sfk_father_module'
+);
+var_dump(execute_multi($link, $arr_sqls,$error));  //函数体返回true或false
+echo $error;  //因为函数在定义时，$error是按引用传递的，所以这里在函数执行完后，$error能保存执行错误的信息
+*/
+function execute_multi($link,$arr_sqls,&$error){
+	$sqls=implode(';',$arr_sqls).';';
+	if(mysqli_multi_query($link,$sqls)){
+		$data=array();
+		$i=0;//计数
+		do {
+			if($result=mysqli_store_result($link)){
+				$data[$i]=mysqli_fetch_all($result);
+				mysqli_free_result($result);
+			}else{
+				$data[$i]=null;
+			}
+			$i++;
+			if(!mysqli_more_results($link)) break;
+		}while (mysqli_next_result($link));
+		if($i==count($arr_sqls)){
+			return $data;
+		}else{
+			$error="sql语句执行失败：<br />&nbsp;数组下标为{$i}的语句:{$arr_sqls[$i]}执行错误<br />&nbsp;错误原因：".mysqli_error($link);
+			return false;
+		}
+	}else{
+		$error='执行失败！请检查首条语句是否正确！<br />可能的错误原因：'.mysqli_error($link);
+		return false;
+	}
+}
+//获取记录数
+function num($link,$sql_count){
+	$result=execute($link,$sql_count);
+	$count=mysqli_fetch_row($result);
+	return $count[0];
+}
+
+//数据入库之前进行转义，确保，数据能够顺利的入库，支持任意多维数组数据类型的转义
+function escape($link,$data){
+	if(is_string($data)){
+		return mysqli_real_escape_string($link,$data);
+	}
+	if(is_array($data)){
+		foreach ($data as $key=>$val){
+			$data[$key]=escape($link,$val);   //迭代，所以支持任意多维数组
+		}
+	}
+	return $data;
+	//mysqli_real_escape_string($link,$data);
+}
+
+//关闭与数据库的连接
+function close($link){
+	mysqli_close($link);    //这里的$link是一个对象，在PHP中，向函数传对象类型的变量的时候就是按引用传，所以一旦关闭数据库，后面就不能再使用了，因为$link已经被改变
+}
+
+
+如何使用：
+<?php 
+include_once '../inc/config.inc.php';
+include_once '../inc/mysql.inc.php';
+
+$link=connect();
+
+$query='select count(*) from sfk_father_module';
+execute($link, $query);
+close($link);//为什么会关闭成功,因为在PHP中，向函数里面传对象类型的变量的时候就是按引用传，就是传递的这个变量本身,而不像其类型的变量，是把值复制一份传进去
+/*
+function a($i){
+	$i=$i+10;
+	echo $i.'<br />';
+}
+$i=2;
+a($i);
+echo $i;
+以上是常见情况,但是有一种特殊情况：就是对象类型的变量
+在我们的PHP里面如果向函数里面传递的是对象，那么并不是把对象复制一份传给函数，而是直接传递的这个对象本身
+向函数里面传递对象类型的变量的时候，其实你这么理解就OK了：传递的就是那个变量本身
+向函数里传递对象，类似于：
+function a(&$i){
+	$i=$i+10;
+	echo $i.'<br />';
+}
+$i=2;
+a($i);
+echo $i;
+*/
+?>
+*********************************************************
+<?php 
+include_once '../inc/config.inc.php';
+include_once '../inc/mysql.inc.php';
+include_once '../inc/tool.inc.php';
+if(isset($_POST['submit'])){
+	$link=connect();
+	//验证用户填写的信息
+	$check_flag='add';
+	include 'inc/check_father_module.inc.php';
+	$query="insert into sfk_father_module(module_name,sort) values('{$_POST['module_name']}',{$_POST['sort']})";
+	execute($link,$query);
+	if(mysqli_affected_rows($link)==1){
+		skip('father_module.php','ok','恭喜你，添加成功！');
+	}else{
+		skip('faher_module_add.php','error','对不起，添加失败，请重试！');
+	}
+}
+
+$template['title']='父版块添加页';
+$template['css']=array('style/public.css','style/father_module_add.css');
+?>
+<?php include 'inc/header.inc.php'?>
+<div id="main">
+	<div class="title" style="margin-bottom:20px;">添加父版块</div>
+	<form method="post">
+		<table class="au">
+			<tr>
+				<td>版块名称</td>
+				<td><input name="module_name" type="text" /></td>
+				<td>
+					版块名称不得为空，最大不得超过66个字符
+				</td>
+			</tr>
+			<tr>
+				<td>排序</td>
+				<td><input name="sort" value="0" type="text" /></td>
+				<td>
+					填写一个数字即可
+				</td>
+			</tr>
+		</table>
+		<input style="margin-top:20px;cursor:pointer;" class="btn" type="submit" name="submit" value="添加" />
+	</form>
+</div>
+<?php include 'inc/footer.inc.php'?>
+**********************************************************
+<?php 
+include_once '../inc/config.inc.php';
+include_once '../inc/mysql.inc.php';
+include_once '../inc/tool.inc.php';
+$template['title']='父版块-修改';
+$template['css']=array('style/public.css');
+$link=connect();
+if(!isset($_GET['id']) || !is_numeric($_GET['id'])){
+	skip('father_module.php','error','id参数错误！');
+}
+$query="select * from sfk_father_module where id={$_GET['id']}";
+$result=execute($link,$query);
+if(!mysqli_num_rows($result)){
+	skip('father_module.php','error','这条版块信息不存在！');
+}
+if(isset($_POST['submit'])){
+	//验证
+	$check_flag='update';
+	include 'inc/check_father_module.inc.php';
+	$query="update sfk_father_module set module_name='{$_POST['module_name']}',sort={$_POST['sort']} where id={$_GET['id']}";
+	execute($link,$query);
+	if(mysqli_affected_rows($link)==1){
+		skip('father_module.php','ok','修改成功！');
+	}else{
+		skip('father_module.php','error','修改失败,请重试！');
+	}
+}
+$data=mysqli_fetch_assoc($result);  //关联数组，比较有用
+?>
+<?php include 'inc/header.inc.php'?>
+<div id="main">
+	<div class="title" style="margin-bottom:20px;">修改父版块 - <?php echo $data['module_name']?></div>
+	<form method="post">
+		<table class="au">
+			<tr>
+				<td>版块名称</td>
+				<td><input name="module_name" value="<?php echo $data['module_name']?>" type="text" /></td>
+				<td>
+					版块名称不得为空，最大不得超过66个字符
+				</td>
+			</tr>
+			<tr>
+				<td>排序</td>
+				<td><input name="sort" value="<?php echo $data['sort']?>" type="text" /></td>
+				<td>
+					填写一个数字即可
+				</td>
+			</tr>
+		</table>
+		<input style="margin-top:20px;cursor:pointer;" class="btn" type="submit" name="submit" value="修改" />
+	</form>
+</div>
+<?php include 'inc/footer.inc.php'?>
+***********************************************************
+检测模块
+<?php 
+if(empty($_POST['module_name'])){
+	skip('father_module_add.php','error','版块名称不得为空！');
+}
+if(mb_strlen($_POST['module_name'])>66){
+	skip('father_module_add.php','error','版块名称不得多余66个字符！');
+}
+if(!is_numeric($_POST['sort'])){
+	skip('father_module_add.php','error','排序只能是数字！');
+}
+$_POST=escape($link,$_POST);
+switch ($check_flag){
+	case 'add':
+		$query="select * from sfk_father_module where module_name='{$_POST['module_name']}'";
+		break;
+	case 'update':
+		$query="select * from sfk_father_module where module_name='{$_POST['module_name']}' and id!={$_GET['id']}";
+		break;
+	default:
+		skip('father_module_add.php','error','$check_flag参数错误！');
+}
+$result=execute($link,$query);
+if(mysqli_num_rows($result)){
+	skip('father_module_add.php','error','这个版块已经有了！');
+}
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,171 @@
+//面向过程的数据库连接
+<?php 
+//数据库连接
+function connect($host=DB_HOST,$user=DB_USER,$password=DB_PASSWORD,$database=DB_DATABASE,$port=DB_PORT){
+	$link=@mysqli_connect($host, $user, $password, $database, $port);
+	if(mysqli_connect_errno()){
+		exit(mysqli_connect_error());
+	}
+	mysqli_set_charset($link,'utf8');
+	return $link;
+}
+//执行一条SQL语句,返回结果集对象或者返回布尔值
+function execute($link,$query){
+	$result=mysqli_query($link,$query);
+	if(mysqli_errno($link)){
+		exit(mysqli_error($link));
+	}
+	return $result;
+}
+//执行一条SQL语句，只会返回布尔值
+function execute_bool($link,$query){
+	$bool=mysqli_real_query($link,$query);
+	if(mysqli_errno($link)){
+		exit(mysqli_error($link));
+	}
+	return $bool;
+}
+//一次性执行多条SQL语句
+/*
+ 一次性执行多条SQL语句
+$link：连接
+$arr_sqls：数组形式的多条sql语句
+$error：传入一个变量，里面会存储语句执行的错误信息
+使用案例：
+$arr_sqls=array(
+	'select * from sfk_father_module',
+	'select * from sfk_father_module',
+	'select * from sfk_father_module',
+	'select * from sfk_father_module'
+);
+var_dump(execute_multi($link, $arr_sqls,$error));
+echo $error;
+*/
+function execute_multi($link,$arr_sqls,&$error){
+	$sqls=implode(';',$arr_sqls).';';
+	if(mysqli_multi_query($link,$sqls)){
+		$data=array();
+		$i=0;//计数
+		do {
+			if($result=mysqli_store_result($link)){
+				$data[$i]=mysqli_fetch_all($result);
+				mysqli_free_result($result);
+			}else{
+				$data[$i]=null;
+			}
+			$i++;
+			if(!mysqli_more_results($link)) break;
+		}while (mysqli_next_result($link));
+		if($i==count($arr_sqls)){
+			return $data;
+		}else{
+			$error="sql语句执行失败：<br />&nbsp;数组下标为{$i}的语句:{$arr_sqls[$i]}执行错误<br />&nbsp;错误原因：".mysqli_error($link);
+			return false;
+		}
+	}else{
+		$error='执行失败！请检查首条语句是否正确！<br />可能的错误原因：'.mysqli_error($link);
+		return false;
+	}
+}
+//获取记录数
+function num($link,$sql_count){
+	$result=execute($link,$sql_count);
+	$count=mysqli_fetch_row($result);
+	return $count[0];
+}
+//数据入库之前进行转义，确保，数据能够顺利的入库
+function escape($link,$data){
+	if(is_string($data)){
+		return mysqli_real_escape_string($link,$data);
+	}
+	if(is_array($data)){
+		foreach ($data as $key=>$val){
+			$data[$key]=escape($link,$val);
+		}
+	}
+	return $data;
+	//mysqli_real_escape_string($link,$data);
+}
+
+
+//关闭与数据库的连接
+function close($link){
+	mysqli_close($link);
+}
+
+?>
+
+
+//面向对象方法连接数据库
+<?php
+/*
+ 初步尝试编写代码
+ 数据库操作
+ 	连接数据库
+ 	看有没有连接成功
+ 	设置数据库编码utf-8
+ 	选择数据库
+ 	查询数据库
+ 	看数据库查询操作有没有出问题	
+ 	将查询到的数据输出
+ */
+header('Content-Type:text/html;charset=utf-8');
+$host='localhost';
+$user='root';
+$password='';
+$database='sfkbbs';
+$port=3306;
+$db=@new mysqli($host, $user, $password, $database, $port);   
+//在php.net的documentation里面找到mysqli，然后到“MySQLi 扩展的功能概述”，找到mysqli_connect()函数，对应的面相对象方法，找到下面的例子，就知道怎么创建这个实例了
+if($db->connect_errno){     //如果连接出错，退出并给出连接错误信息，这里都是以对象的属性给出的
+	exit($db->connect_error);
+}
+var_dump($db);  //就算密码错误的时候，为什么这里connect_error输出的属性值全是null，不是具体的错误信息
+$db->set_charset('utf8');   //对象的方法设置数据库字符编码
+$result=$db->query('select * from sfk_content');  //对象的方法，执行mysql语句并返回执行结果的对象，将对象再赋值给一个变量，后面可以利用
+if($db->errno){     //这里是数据库操作错误信息,例如查询的表不存在，字段不存在等等
+	exit($db->error);
+}
+var_dump($result->fetch_all());    //获取所有查询的数据
+
+//使用类将连接数据库的过程封装起来
+<?php
+/*
+ 初步尝试编写代码
+ 数据库操作
+ 	连接数据库
+ 	看有没有连接成功
+ 	设置数据库编码utf-8
+ 	选择数据库
+ 	查询数据库
+ 	看数据库查询操作有没有出问题	
+ 	将查询到的数据输出
+ */
+header('Content-Type:text/html;charset=utf-8');
+class Mysql extends mysqli{
+	public function __construct($host, $user, $password, $database, $port,$charset='utf8'){   //重写父类mysqli的__construct函数
+		@parent::__construct($host, $user, $password, $database, $port);  //这里要执行一遍父类的__cunstruct函数，并传入参数
+		if($this->connect_errno){            //这里加开始加功能，原来的__construct函数没有这些功能
+			exit($this->connect_error);
+			}
+		$this->set_charset($charset);    //设置字符编码，形参那里设置了默认值
+	}
+	public function execute($query){     //这里是执行mysql语句的函数，并加上有错误处理的功能
+		$result_mysql=$this->query($query);   
+		$this->result_mysql=$result_mysql;     //这里两句其实可以合并成一句：$this->result_mysql=$this->query($query);
+		if($this->errno){
+			exit($this->error);
+		}
+	}
+}
+//主程序部分开始
+$host='localhost';
+$user='root';
+$password='';
+$database='sfkbbs';
+$port=3306;
+$charset='utf8';
+$query='select * from sfk_content';
+$db=new Mysql($host, $user, $password, $database, $port,$charset);   //实例化Mysql类的对象，这里的Mysql就是上面自己重写的mysqli的子类
+$db->execute($query);
+var_dump($db->result_mysql->fetch_all());

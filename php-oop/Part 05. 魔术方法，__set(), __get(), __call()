@@ -1,0 +1,219 @@
+<?php
+/*
+ 魔术方法（神奇的方法）
+ 我们在定义类的时候，可以在类里面写上10多个魔术方法，这些方法有特殊的作用；
+ 1) 魔术方法在特定的时机会自动执行，无需手动调用；
+ 2) 魔术方法以__开头（两个下划线）
+ 注：自己在定义普通方法的时候尽量不要以__开头
+1、__construct() 构造函数
+2、__destruct() 析构函数
+3、__set() 
+	public void __set ( string $name , mixed $value )  
+		在给不可访问属性（不存在的，不可见的等等）赋值时，__set() 会被调用。
+		必须被声明为 public		
+ */
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){    //__construct()在这里就是魔术方法
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	public function __set($name,$val){    //$hanMM->fans="张学友";这个属性不存在，这里程序会自动把$name=fans;$="张学友;"
+		echo "{$name}:{$val}";
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。<br />";
+	}
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->fans="张学友";
+
+
+<?php
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money;  //限制了可见性，在类的外面无法直接访问的
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	public function __set($name,$val){ 
+		echo "类的属性:{$name} 和其属性值:{$val} 不存在或者不可见。自动调用魔术方法__set()<br />";
+		//既然类里面在设置属性的可见性的时候已经规定了在类外面不可访问，这里是$money和$dna，那为什么还要有__set()方法来让$money和$dna显示出来呢？
+		//其实我们可以在__set()方法这里做一些限制和判断，只有符合某些条件后，不可见的属性是可以被访问和重新赋值的
+		//比如下面的条件满足后，才会执行条件里面的操作
+		if($val<1000){
+			$this->$name=$val;    //因为在类外面这样调用：$hanMM->money=999;money是protected的，那么这里的$name就是money
+		}
+		
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo $this->money;  //在上面的__set()魔术方法里面被赋值后，这里就可以调用输出了；
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";		
+	}
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->money=999;    //这里直接调用类里面受保护的属性，魔术方法__set()会自动运行，将$name=money; $value=999; 
+$hanMM->eat("香蕉");
+
+
+
+<?php
+/*
+ 魔术方法
+__get() 
+public mixed __get ( string $name ) 
+读取不可访问 属性 的值时，__get() 会被调用。 
+必须被声明为 public
+ */
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money=100;  //限制了可见性，在类的外面无法直接访问的
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	public function __get($name){
+		echo "<p>类的属性{$name}不可访问，自动调用__get()魔术方法。</p>";
+		$this->$name=10000;
+		echo $this->$name;
+		return $this->$name;   
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";	
+		echo $this->money;	
+	}
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("火龙果");
+$hanMM->money; //这里会调用__get()魔术方法，导致$money的值被改变
+$hanMM->eat("苹果");
+var_dump($hanMM->money); 
+//这里因为上面有return $this->$name，所以会返回一个10000，如果没有return,这里将是返回null
+//把protected $money=100; 改成public $money=100; 后，这里的var_dump($hanMM->money)就会返回默认值100；
+$hanMM->eat("火龙果");
+
+输出：
+韩梅梅是一位学生,他说：火龙果好吃，所以他正在快速的吃火龙果。
+
+100
+类的属性money不可访问，自动调用__get()魔术方法。
+
+10000
+韩梅梅是一位学生,他说：苹果好吃，所以他正在快速的吃苹果。
+
+10000
+类的属性money不可访问，自动调用__get()魔术方法。
+
+10000
+E:\wamp64\www\php2\demo_1\2.php:49:int 10000
+韩梅梅是一位学生,他说：火龙果好吃，所以他正在快速的吃火龙果。
+
+10000
+
+<?php
+/*
+ 魔术方法
+__call() 
+public mixed __call ( string $name , array $arguments ) 
+在对象中调用一个不可访问方法时，__call() 会被调用。 
+$name 参数是要调用的方法名称。 
+$arguments 参数是一个枚举数组，包含着要传递给方法 $name 的参数。
+必须被声明为 public 
+ */
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money=100;  //限制了可见性，在类的外面无法直接访问的
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function __call($name,$args){   //$name保存的是方法名，$args保存的是传进来的参数，数组形式
+		echo "<p>方法：{$name}不可访问或不存在，自动调用__call()方法,{$name}被传进来的参数是：</p>";
+		var_dump($args);
+		$this->test($args[0],$args[1]);   
+		//这里可以执行protected的方法，相当于在类里面调用，而不是类外面调用；
+		//这样做的目的是不把方法给写死了，虽然类里面规定了protected，但是还是有商量的余地，在这里可以限制条件，在什么情况下调用test()方法
+	}
+	protected function test($test1,$test2){
+		echo "<p>执行了方法test(),传进来的参数是{$test1}和{$test2}</p>";
+	}
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";	
+	}
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("火龙果");
+$hanMM->test("test01","test02");
+

@@ -1,0 +1,34 @@
+一、判断PHP是ts还是nts版
+通过phpinfo(); 查看其中的 Thread Safety 项，这个项目就是查看是否是线程安全，如果是：enabled，一般来说应该是ts版，否则是nts版。
+
+二、根据PHP ts\nts版选择对应pthreads的版本
+windows版本php5.6的下载地址
+https://windows.php.net/downloads/pecl/releases/pthreads/2.0.6/logs/
+
+
+三、安装pthreads扩展
+将下载好的php_pthreads-0.1.0-5.4-ts-vc9-x86.zip文件包解压得到
+pthreadVC2.dll和php_pthreads.dll文件，把vc2文件放到php.exe同级目录，把php_pthreads.dll放到扩展目录下。
+1、修改php.ini文件 添加extension=php_pthreads.dll
+2、修改Apache配置文件httpd.conf 添加LoadFile "X:/PHP5/pthreadVC2.dll"
+3、重启Apache服务器
+
+四、测试pthreads扩展
+<?php  
+class AsyncOperation extends Thread {  
+  public function __construct($arg){  
+    $this->arg = $arg;  
+  }  
+  
+  public function run(){  
+    if($this->arg){  
+      printf("Hello %s\n", $this->arg);  
+    }  
+  }  
+}  
+$thread = new AsyncOperation("World");  
+if($thread->start())  
+  $thread->join();  
+?>  
+
+运行以上代码得到“HelloWorld”，就说明安装pthreads扩展成功！

@@ -1,0 +1,189 @@
+<?php
+/*
+ 类型约束：
+ 	是一个锦上添花的功能
+ 	我们在定义方法的时候，可以指定我们的参数必须接受什么类型的数据
+ 	注意：不能指定标量，例如：(string $a)，这样指定是会报错的，只能指定(类名 $arg)，例如：(Dog $a)
+ 	参数可以指定必须为对象（指定类的名字）、接口、数组（Array）、callable(函数) 
+	可以使用 NULL 作为参数的默认值，在调用方法的时候可以使用 NULL 作为实参
+	如果一个类或接口指定了类型约束，则其所有的子类或实现也都如此。 
+	类型约束不只是用在类的成员方法里，也能使用在函数里使用
+ */
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money=100;
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";	
+	}
+	public function walkTheDog(Dog $a){
+		echo "<p>这里是walkTheDog方法，必须只能接受Dog类的实例</p>";
+	}
+}
+class Dog{
+	
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("火龙果");
+$ww=new Dog();
+$hanMM->walkTheDog($ww);
+
+
+<?php
+//接口
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money=100;
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";	
+	}
+	public function walkTheDog(Dog $a){
+		echo "<p>这里是walkTheDog方法，必须只能接受Dog类的实例</p>";
+	}
+}
+interface Dog{   //接口
+	
+}
+class Huskies implements Dog{   
+	
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("火龙果");
+$ww=new Huskies();
+$hanMM->walkTheDog($ww);
+
+
+<?php
+//数组类型
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money=100;
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";	
+	}
+	public function walkTheDog(Array $a){    //这里规定了数组类型,array大小写无所谓
+		echo "<p>这里是walkTheDog方法，必须只能接受数组数据类型</p>";
+	}
+}
+class Dog{
+	
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("火龙果");
+$ww=new Dog();
+$hanMM->walkTheDog(array()); //这里如果传入的是$ww就不行，因为$ww不是数组类型
+
+
+<?php
+/*
+ callable(函数) 
+ 可以使用 NULL 作为参数的默认值，在调用方法的时候可以使用 NULL 作为实参
+ */
+header('Content-Type:text/html;charset=utf-8');
+abstract class Humanity{
+	public $name;
+	public $sex;
+	public $job;
+	public $age=10;
+	protected $money=100;
+	protected $dna;
+	const BIRTHPLACE='EARTH';
+	static public $counter=1;
+	public function __construct($name,$sex,$job){
+		$this->name=$name;
+		$this->sex=$sex;
+		$this->job=$job;
+		self::$counter++;
+	}
+	abstract public function eat($food);
+	public function say($content){
+		echo "<p>{$content}</p>";
+	}
+	static public function hello(){
+		echo "hello,我是来自".self::BIRTHPLACE."的人类<br />"; 
+	}
+}
+class Student extends Humanity{ 
+	public function eat($food){
+		echo "<p>{$this->name}是一位{$this->job},他说：{$food}好吃，所以他正在快速的吃{$food}。</p>";	
+	}
+	public function walkTheDog(callable $a=null){   //规定了要传入函数类型，传进来的是函数名, 这里给个默认值null
+		$a();     //这里可以规定函数怎么执行，要不要执行，这样绕一大圈就是为了限制函数执行的方式，可以在不同情况下传入不同函数，以不同的方式执行
+	}
+}
+class Dog{
+	
+}
+function func1(){
+	echo ":))";
+}
+$hanMM=new Student("韩梅梅","女","学生");
+$hanMM->eat("火龙果");
+$ww=new Dog();
+$hanMM->walkTheDog("func1");    //按照要求，要传入一个函数类型，这里传入的是函数名
+
